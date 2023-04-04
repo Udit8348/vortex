@@ -1,3 +1,13 @@
+DOCKERFILE
+- update the instructions to use sed from nicholas
+- add in cleaner documentation for using the Dockerfile in docs/
+- probably create a subdir (if possible) for the dockerfile and scripts? (look for reference repos)
+
+REPO
+- should I have just forked the repo? (might ask later -- maybe ill just keep this for the tutorials)
+- look at the github issues and see which ones can be addressed by your Dockerfile
+- ask professors if you can add a branch and make a pr for the Dockerfile on the main repo
+- if that is the case, however maybe I should just fork the repo?
 
 
 
