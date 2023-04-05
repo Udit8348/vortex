@@ -156,6 +156,7 @@ module VX_issue #(
     reg [`PERF_CTR_BITS-1:0] perf_lsu_stalls;
     reg [`PERF_CTR_BITS-1:0] perf_csr_stalls;
     reg [`PERF_CTR_BITS-1:0] perf_gpu_stalls;
+    reg [`PERF_CTR_BITS-1:0] perf_active_threads;
 `ifdef EXT_F_ENABLE
     reg [`PERF_CTR_BITS-1:0] perf_fpu_stalls;
 `endif
@@ -168,10 +169,23 @@ module VX_issue #(
             perf_lsu_stalls <= 0;
             perf_csr_stalls <= 0;
             perf_gpu_stalls <= 0;
+            perf_active_threads <= 0;
         `ifdef EXT_F_ENABLE
             perf_fpu_stalls <= 0;
         `endif
         end else begin
+            if (ibuffer_if.valid & ibuffer_if.ready) begin 
+                // count the number of active bits in ibuffer_if.tmask" and assign that value to perf_active_threads
+                integer active_bits = 0;
+                for (int i = 0; i < 32; i++) begin
+                    if (ibuffer_if.tmask[i] == 1'b1)
+                        active_bits++;
+                    // active_bits = active_bits + ibuffer_if.tmask[i];
+                end
+                // perf_active_threads = active_bits;
+                perf_active_threads <= {{12{1'b0}}, active_bits};
+
+            end
             if (decode_if.valid & ~decode_if.ready) begin
                 perf_ibf_stalls <= perf_ibf_stalls  + `PERF_CTR_BITS'd1;
             end
@@ -193,6 +207,7 @@ module VX_issue #(
         end
     end
     
+    assign perf_pipeline_if.active_threads = perf_active_threads; // not sure where to place this
     assign perf_issue_if.ibf_stalls = perf_ibf_stalls;
     assign perf_issue_if.scb_stalls = perf_scb_stalls; 
     assign perf_issue_if.alu_stalls = perf_alu_stalls;
