@@ -108,6 +108,8 @@ extern int vx_dump_perf(vx_device_h device, FILE* stream) {
 #ifdef PERF_ENABLE
   uint64_t active_threads = 0;
 
+  uint64_t wrp_same_mem = 0;
+
   // PERF: pipeline stalls
   uint64_t ibuffer_stalls = 0;
   uint64_t scoreboard_stalls = 0;
@@ -285,6 +287,10 @@ extern int vx_dump_perf(vx_device_h device, FILE* stream) {
     mem_reads  += mem_reads_per_core;
     mem_writes += mem_writes_per_core;
     mem_lat    += mem_lat_per_core;    
+
+    uint64_t warp_dup_mem = get_csr_64(staging_ptr, CSR_MPM_MEM_DUP);
+    if (num_cores > 1) fprintf(stream, "PERF: core%d: mem dups=%ld\n", core_id, warp_dup_mem);
+    wrp_same_mem += warp_dup_mem;  
   
   #ifdef EXT_TEX_ENABLE
     // total reads
@@ -313,6 +319,7 @@ extern int vx_dump_perf(vx_device_h device, FILE* stream) {
   int mem_avg_lat = (int)(double(mem_lat) / double(mem_reads));
   float TPC = (float)(double(active_threads) / double(cycles));
   fprintf(stream, "PERF: threads=%ld, cycles=%ld, TPC=%f\n", active_threads, cycles, TPC);
+  fprintf(stream, "PERF: DUPS=%ld\n", wrp_same_mem);
   fprintf(stream, "PERF: ibuffer stalls=%ld\n", ibuffer_stalls);
   fprintf(stream, "PERF: scoreboard stalls=%ld\n", scoreboard_stalls);
   fprintf(stream, "PERF: alu unit stalls=%ld\n", alu_stalls);

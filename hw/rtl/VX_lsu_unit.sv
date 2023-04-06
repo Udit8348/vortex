@@ -15,6 +15,12 @@ module VX_lsu_unit #(
     // inputs
     VX_lsu_req_if.slave     lsu_req_if,
 
+    // include a perf count interface with the output (master)
+    `ifdef PERF_ENABLE
+        VX_perf_memsys_if.master     perf_memsys_if,
+        // VX_perf_memsys_if     perf_memsys_if,
+    `endif
+
     // outputs
     VX_commit_if.master     ld_commit_if,
     VX_commit_if.master     st_commit_if
@@ -38,6 +44,9 @@ module VX_lsu_unit #(
     wire [`NW_BITS-1:0]           req_wid;
     wire [31:0]                   req_pc;
     wire                          req_is_dup;
+    `ifdef PERF_ENABLE
+        reg [`PERF_CTR_BITS-1:0]         perf_mem_dup;
+    `endif
     wire                          req_is_prefetch;
     
     wire mbuf_empty;
@@ -166,7 +175,19 @@ module VX_lsu_unit #(
         if (reset) begin
             req_sent_mask <= 0;
             is_req_start  <= 1;
+            `ifdef PERF_ENABLE
+                perf_mem_dup  <= 0;
+            `endif    
         end else begin
+            // Increment the counter if all threads request the same address
+            // Study closely how this signal is implemented and use it to update the counter.
+            // TODO: my method of getting the reqisdup value might be wrong?
+            `ifdef PERF_ENABLE
+                if (req_is_dup == 1'b1) begin
+                    perf_mem_dup <= perf_mem_dup + 1;
+                end
+            `endif
+
             if (dcache_req_ready) begin
                 req_sent_mask <= 0;
                 is_req_start  <= 1;
@@ -176,6 +197,11 @@ module VX_lsu_unit #(
             end
         end
     end
+
+    `ifdef PERF_ENABLE
+        assign perf_memsys_if.mem_dup = perf_mem_dup;
+    `endif
+    
 
     // need to hold the acquired tag index until the full request is submitted
     reg [`LSUQ_ADDR_BITS-1:0] req_tag_hold;

@@ -210,6 +210,10 @@
 `define CSR_MPM_MEM_WRITES_H        12'hB99
 `define CSR_MPM_MEM_LAT             12'hB1A     // memory latency
 `define CSR_MPM_MEM_LAT_H           12'hB9A
+
+`define CSR_MPM_MEM_DUP             12'hB1F	    // mem dups across a warp
+`define CSR_MPM_MEM_DUP_H           12'hB9F
+
 // PERF: texunit
 `define CSR_MPM_TEX_READS           12'hB1B     // texture accesses
 `define CSR_MPM_TEX_READS_H         12'hB9B

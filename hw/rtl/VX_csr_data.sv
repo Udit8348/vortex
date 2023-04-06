@@ -210,6 +210,10 @@ module VX_csr_data #(
             `CSR_MPM_MEM_WRITES_H   : read_data_r = 32'(perf_memsys_if.mem_writes[`PERF_CTR_BITS-1:32]);
             `CSR_MPM_MEM_LAT        : read_data_r = perf_memsys_if.mem_latency[31:0];
             `CSR_MPM_MEM_LAT_H      : read_data_r = 32'(perf_memsys_if.mem_latency[`PERF_CTR_BITS-1:32]);
+
+            // modification in the memsys interface
+            `CSR_MPM_MEM_DUP        : read_data_r = perf_memsys_if.mem_dup[31:0];
+            `CSR_MPM_MEM_DUP_H      : read_data_r = 32'(perf_memsys_if.mem_dup[`PERF_CTR_BITS-1:32]);
         `ifdef EXT_TEX_ENABLE
             // PERF: texunit
             `CSR_MPM_TEX_READS      : read_data_r = perf_tex_if.mem_reads[31:0];
