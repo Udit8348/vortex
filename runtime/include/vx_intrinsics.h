@@ -149,6 +149,12 @@ inline void vx_barrier(unsigned barried_id, unsigned num_warps) {
     asm volatile (".insn s 0x6b, 4, %1, 0(%0)" :: "r"(barried_id), "r"(num_warps));
 }
 
+// add a pre-fetch instruction
+// 0x6b is opcode for custom instructions (0-4 already used)
+inline void vx_prefetch(unsigned addr) {
+    asm volatile (".insn s 0x6b, 5, x0, 0(%0)" :: "r"(addr) );
+}
+
 // Return active warp's thread id 
 inline int vx_thread_id() {
     int result;

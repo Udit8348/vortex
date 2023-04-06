@@ -376,16 +376,14 @@ module VX_decode  #(
                         `USED_IREG (rs1);
                         `USED_IREG (rs2);
                     end
-                `ifdef EXT_TEX_ENABLE
                     3'h5: begin
-                        op_type = `INST_OP_BITS'(`INST_GPU_TEX);
-                        op_mod  = `INST_MOD_BITS'(func2);
-                        use_rd  = 1;       
-                        `USED_IREG (rd);              
+                        // mimic a load from the LSU
+                        ex_type = `EX_LSU;
+                        use_imm = 1;
+                        imm = {{27{rs1[4]}}, rs1}; // sign extend the rs1 value to be a 32 bit imm
+                        op_type = `INST_OP_BITS'(`INST_LSU_LW);
                         `USED_IREG (rs1);
-                        `USED_IREG (rs2);
-                        `USED_IREG (rs3);
-                    end
+                    end   
                 `endif
                     default:;
                 endcase

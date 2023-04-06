@@ -712,6 +712,10 @@ void Warp::execute(const Instr &instr, Pipeline *pipeline) {
         pipeline->stall_warp = true; 
         runOnce = true;       
       } break;
+      case 5: {
+        // "PREF"etch
+        std::cout << rsdata[0] << "\n";
+      } break;
       default:
         std::abort();
       }

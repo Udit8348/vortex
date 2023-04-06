@@ -59,6 +59,7 @@ module VX_instr_demux (
 
     wire lsu_req_valid = ibuffer_if.valid && (ibuffer_if.ex_type == `EX_LSU);
     wire [`INST_LSU_BITS-1:0] lsu_op_type = `INST_LSU_BITS'(ibuffer_if.op_type);
+    wire lsu_is_prefetch = (~ibuffer_if.wb) && ~(ibuffer_if.op_type[`INST_OP_BITS-1]);
     wire lsu_is_fence = `INST_LSU_IS_FENCE(ibuffer_if.op_mod);
 
     VX_skid_buffer #(
