@@ -63,7 +63,7 @@ static const char* op_string(const Instr &instr) {
       case 5: return "DIVU";
       case 6: return "REM";
       case 7: return "REMU";
-      }
+      } break;
     } else {
       switch (func3) {
       case 0: return func7 ? "SUB" : "ADD";
@@ -74,7 +74,7 @@ static const char* op_string(const Instr &instr) {
       case 5: return func7 ? "SRA" : "SRL";
       case 6: return "OR";
       case 7: return "AND";
-      }
+      } break;
     }
   case Opcode::I_INST:
     switch (func3) {
@@ -86,7 +86,7 @@ static const char* op_string(const Instr &instr) {
     case 5: return func7 ? "SRAI" : "SRLI";
     case 6: return "ORI";
     case 7: return "ANDI";
-    }  
+    } break;
   case Opcode::B_INST:
     switch (func3) {
     case 0: return "BEQ";
@@ -185,10 +185,13 @@ static const char* op_string(const Instr &instr) {
     case 5: return "PREF";
     default:
       std::abort();
+      return "-1";
     }
   default:
     std::abort();
-  }  
+    return "-1";
+  }
+  return "-1";
 }
 
 namespace vortex {

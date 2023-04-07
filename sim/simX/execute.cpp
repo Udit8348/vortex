@@ -714,7 +714,8 @@ void Warp::execute(const Instr &instr, Pipeline *pipeline) {
       } break;
       case 5: {
         // "PREF"etch
-        std::cout << rsdata[0] << "\n";
+        // std::cout << rsdata[0] << "\n";
+        printf("=== prefetch %d ===\n", rsdata[0]);
       } break;
       default:
         std::abort();
