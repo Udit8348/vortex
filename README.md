@@ -29,24 +29,48 @@ Vortex is a full-system RISCV-based GPGPU processor.
 - `ci`: Continuous integration scripts.
 - `miscs`: Miscellaneous resources.
 
-## Build Instructions
-### Supported OS Platforms
-- Ubuntu 18.04
-- Centos 7
-### Toolchain Dependencies
-- [POCL](http://portablecl.org/)
-- [LLVM](https://llvm.org/)
-- [RISCV-GNU-TOOLCHAIN](https://github.com/riscv-collab/riscv-gnu-toolchain)
-- [Verilator](https://www.veripool.org/verilator)
-### Install development tools 
-    $ sudo apt-get install build-essential
-    $ sudo apt-get install git
-### Install Vortex codebase
-    $ git clone --recursive https://github.com/vortexgpgpu/vortex.git
-    $ cd Vortex
-### Install prebuilt toolchain
-    $ ./ci/toolchain_install.sh -all
-### Build Vortex sources
-    $ make -s
-### Quick demo running vecadd OpenCL kernel on 2 cores
-    $ ./ci/blackbox.sh --driver=rtlsim --cores=2 --app=vecadd
+# GPU-BF16: Design Exploration for bfloat16 FPU Extension for RISC-V GPGPU Vortex
+
+Vortex is a full-system RISCV-based GPGPU processor. This feature aims to extend vortex with new floating point units that support **bfloat16**.
+
+## Mentors 
+Tine, Blaise <blaisetine@gatech.edu>
+
+Cooper, Liam <lcooper43@gatech.edu>
+
+## Introduction
+The popularization of non-standard floating-point formats by machine learning applications has been gaining support for hardware acceleration in recent years with accelerators like Google TPU and NVidia GPUs. bfloat16 reduced-precision floating-point format is heavily used for fast neural network inference for its storage density and for its hardware implementation efficiency while retaining the dynamic range of FP32
+
+## What to implement:
+You will be tasked to implement and evaluate bfloat16 in hardware using Verilog HDL. Vortex GPGPU (https://vortex.cc.gatech.edu/publications/vortex_micro21_final.pdf) currently supports RISC-V floating-point 32-bit ISA extension. You will be extending the current FPU pipeline to support the bfloat16 format. To enable bfloat16, applications will modify a specific CSR register to set the float-point precision for the next operations.
+
+## Metrics:
+latency, power consumption, and resource utilization on the FPGA.
+
+## Keywords: Vector, GPGPU, Vortex
+
+## Doc
+[google doc](https://docs.google.com/document/d/1TKFeWRtvvfIE7FpOwqvBslruGUJESe4jnbEJp2bhVT4/edit#)
+[bfloat-wikichip](https://en.wikichip.org/wiki/brain_floating-point_format)
+[vortex](https://github.com/vortexgpgpu/vortex)
+
+## Deadlines
+HW6 + Vortex Tutorials:	4/6 (T)
+Milestone 1: 4/10 (M)
+Milestone 2: 4/17(M) 
+Presentation: 4/19 (W)  
+Milestone 3:  4/ 28  (F)  
+Final report: 5/5 (F)
+
+
+## Milestones
+
+- [X] **Pre-requisite task 1**: Become initially familiar with Vortex (Resources reading list, and https://vortex.cc.gatech.edu/publications/vortex_micro21_final.pdf)
+
+- [ ] **Milestone 1**: Implement a functioning C++ emulation implementation of fmadd on Vortex (SimX).
+
+- [ ] **Milestone 2**:  Implement a functioning Verilog implementation of the BF16 floating point operation, including enabling the use of a specific CSR register to be set to define the floating-point precision of the next operation.
+
+
+- [ ] ** Milestone 3**: Obtain latency, power consumption, and resource utilization on the FPGA
+
