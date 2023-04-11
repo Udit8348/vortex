@@ -36,7 +36,7 @@ Vortex is a full-system RISCV-based GPGPU processor. This feature aims to extend
 ## Mentors 
 Tine, Blaise <blaisetine@gatech.edu>
 
-Cooper, Liam <lcooper43@gatech.edu>
+Saxena, Varun <vsaxena36@gatech.edu>
 
 ## Introduction
 The popularization of non-standard floating-point formats by machine learning applications has been gaining support for hardware acceleration in recent years with accelerators like Google TPU and NVidia GPUs. bfloat16 reduced-precision floating-point format is heavily used for fast neural network inference for its storage density and for its hardware implementation efficiency while retaining the dynamic range of FP32
