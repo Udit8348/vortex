@@ -212,13 +212,13 @@ public:
         if (b_exp == 0 && b_mantissa == 0)
         {
             std::cout << "HERE" << std::endl;
-            return MyFloat(0, 0xFF, quotient_sign); // Return infinity with the appropriate sign
+            return BrainFloat(0, 0xFF, quotient_sign); // Return infinity with the appropriate sign
         }
 
         // Check for infinity or zero in dividend
         if (a_exp == 0xFF || a_exp == 0)
         {
-            return MyFloat(0, a_exp, quotient_sign);
+            return BrainFloat(0, a_exp, quotient_sign);
         }
 
         // Subtract exponents
