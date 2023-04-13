@@ -90,3 +90,12 @@ Final report: 5/5 (F)
     - take inspo from dogfood
 - think about slides
     - create the slides LOL
+
+## Commands and Vortex Reference
+
+./ci/blackbox.sh --driver=simx --cores=4 --app=bf_dogfood --args=”-n16”
+
+(need to add an arg for float type)
+
+## bf_dogfood
+
