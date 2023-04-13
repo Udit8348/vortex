@@ -74,3 +74,19 @@ Final report: 5/5 (F)
 
 - [ ] ** Milestone 3**: Obtain latency, power consumption, and resource utilization on the FPGA
 
+---
+
+## TODO Milestone 2
+- finish the bfloat class
+    - operators (basic ones for now)
+    - edge cases (zero, NAN, inf)
+    - place class in common ? && update the makefiles so that it can be found
+- integrate into SimX
+    - determine the RISC-V float operations (so we know which instrcutions to convert to bfloat)
+    - figure out how simx code is structured (deocde, execute)
+    - plan how to toggle between ieee-754 float and out bfloat (use macro?)
+    - insert the bfloat class and use it where necessary
+- create test cases that do the traditional floating point operations but with out bfloat data type
+    - take inspo from dogfood
+- think about slides
+    - create the slides LOL
