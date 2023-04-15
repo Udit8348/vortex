@@ -16,6 +16,11 @@
 using namespace vortex;
 
 int main(int argc, char **argv) {
+
+  #ifdef BF16
+    std::cout << "========= SIMX MAIN for BF16 ==========" << std::endl;
+  #endif
+
   int exitcode = 0;
 
   std::string imgFileName;

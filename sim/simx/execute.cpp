@@ -106,6 +106,7 @@ void Warp::execute(const Instr &instr, pipeline_trace_t *trace) {
   assert(tmask_.any());
 
   auto nextPC = PC_ + core_->arch().wsize();
+  // auto nextPC = 0;
 
   auto func2  = instr.getFunc2();
   auto func3  = instr.getFunc3();
@@ -1240,7 +1241,15 @@ void Warp::execute(const Instr &instr, pipeline_trace_t *trace) {
       case FMADD:
         if (func2)
           // RV32D: FMADD.D
-          rddata[t].f = rv_fmadd_d(rsdata[t][0].f, rsdata[t][1].f, rsdata[t][2].f, frm, &fflags);
+          #ifndef BF16
+            rddata[t].f = rv_fmadd_d(rsdata[t][0].f, rsdata[t][1].f, rsdata[t][2].f, frm, &fflags);
+          #endif
+
+          #ifdef BF16
+            // see if BF16 macro is working -- purposely fail test output
+            rddata[t].f = 0;
+          #endif
+
         else
           // RV32F: FMADD.S
           rddata[t].f = nan_box(rv_fmadd_s(rsdata[t][0].f, rsdata[t][1].f, rsdata[t][2].f, frm, &fflags));

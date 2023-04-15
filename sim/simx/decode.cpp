@@ -339,7 +339,13 @@ static const char* op_string(const Instr &instr) {
     default:
       std::abort();
     }
-  case Opcode::FMADD:   return func2 ? "FMADD.D" : "FMADD.S";
+  case Opcode::FMADD:{
+    #ifdef BF16
+      std::cout << "========= HERE for BF16 ==========" << std::endl;
+    #endif
+    std::cout << "func2: " << func2 << std::endl;
+    return func2 ? "FMADD.D" : "FMADD.S";
+  }   
   case Opcode::FMSUB:   return func2 ? "FMSUB.D" : "FMSUB.S";
   case Opcode::FMNMADD: return func2 ? "FNMADD.D" : "FNMADD.S";
   case Opcode::FMNMSUB: return func2 ? "FNMSUB.D" : "FNMSUB.S";

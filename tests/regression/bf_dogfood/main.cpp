@@ -159,6 +159,12 @@ int main(int argc, char *argv[]) {
 
   std::cout << std::dec;
 
+  #ifndef BF16
+    std::cout << "========= BF_DOGFOOD for BF16 ==========" << std::endl;
+  #endif
+
+  //  std::cout << "========= BF_DOGFOOD for BF16 ==========" << std::endl;
+
   std::cout << "test ids: " << testid_s << " - " << testid_e << std::endl;
   std::cout << "workitem size: " << count << std::endl;
   std::cout << "using kernel: " << kernel_file << std::endl;

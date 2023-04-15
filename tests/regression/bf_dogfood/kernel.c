@@ -263,7 +263,7 @@ static const PFN_Kernel sc_tests[] = {
 };
 
 void main() {
-	// set the CSR so that we can tell the driver program to tell it to calculate with bfloat
+	// TODO: set the CSR so that we can tell the driver program to tell it to calculate with bfloat
 	kernel_arg_t* arg = (kernel_arg_t*)KERNEL_ARG_DEV_MEM_ADDR;
 	vx_spawn_tasks(arg->num_tasks, (vx_spawn_tasks_cb)sc_tests[arg->testid], arg);
 }

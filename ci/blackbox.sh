@@ -3,7 +3,7 @@
 show_usage()
 {
     echo "Vortex BlackBox Test Driver v1.0"
-    echo "Usage: [[--clusters=#n] [--cores=#n] [--warps=#n] [--threads=#n] [--l2cache] [--l3cache] [[--driver=rtlsim|vlsim|simx] [--debug] [--scope] [--perf] [--app=vecadd|sgemm|basic|demo|dogfood] [--args=<args>] [--help]]"
+    echo "Usage: [[--clusters=#n] [--cores=#n] [--warps=#n] [--threads=#n] [--l2cache] [--l3cache] [[--driver=rtlsim|vlsim|simx] [--debug] [--scope] [--perf] [--bf16] [--app=vecadd|sgemm|basic|demo|dogfood] [--args=<args>] [--help]]"
 }
 
 SCRIPT_DIR=$(dirname "$0")
@@ -70,6 +70,10 @@ case $i in
         PERF_FLAG=-DPERF_ENABLE
         shift
         ;;
+    --bf16)
+        BF16_FLAG=-DBF16
+        shift
+        ;;
     --args=*)
         ARGS=${i#*=}
         HAS_ARGS=1
@@ -120,7 +124,7 @@ else
     exit -1
 fi
 
-CONFIGS="-DNUM_CLUSTERS=$CLUSTERS -DNUM_CORES=$CORES -DNUM_WARPS=$WARPS -DNUM_THREADS=$THREADS -DL2_ENABLE=$L2 -DL3_ENABLE=$L3 $PERF_FLAG $CONFIGS"
+CONFIGS="-DNUM_CLUSTERS=$CLUSTERS -DNUM_CORES=$CORES -DNUM_WARPS=$WARPS -DNUM_THREADS=$THREADS -DL2_ENABLE=$L2 -DL3_ENABLE=$L3 $PERF_FLAG $BF16_FLAG $CONFIGS"
 
 echo "CONFIGS=$CONFIGS"
 
