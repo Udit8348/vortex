@@ -30,5 +30,8 @@ namespace vortex {
 
             friend BrainFloat operator-(const BrainFloat& a, const BrainFloat& b);
             friend BrainFloat operator+(const BrainFloat& a, const BrainFloat& b);
+            friend BrainFloat operator*(const BrainFloat& a, const BrainFloat& b);
+            friend BrainFloat operator/(const BrainFloat& a, const BrainFloat& b);
+
     };
 } // namespace vortex
