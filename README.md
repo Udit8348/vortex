@@ -94,8 +94,27 @@ Final report: 5/5 (F)
 ## Commands and Vortex Reference
 
 ./ci/blackbox.sh --driver=simx --cores=4 --app=bf_dogfood --args=”-n16”
+./ci/blackbox.sh --driver=simx --cores=4 --app=bf_dogfood --bf16
 
 (need to add an arg for float type)
 
-## bf_dogfood
+## Questions
+- why does the single precision version have boxed NaN?
+- why doesn't the double precision version not have a boxed NaN?
+- how and where does the precision get set? -- **
 
+
+Contributions
+
+- research bf16: Udit
+- implement base bf16 base class: Udit
+- implmement addition and subtraction: Udit
+- implement multiplication and division: Nick
+- implement iee Nan, inf, 0 edge cases: Nick
+- integrate code into SimX: Udit and Nick
+- create test suite for SimX (bf_dogfood): Udit
+- baseline verilog: Nick
+
+TODO: 2-3 page report, more details
+maybe start the presentation slides
+timeline so far, and future plan
