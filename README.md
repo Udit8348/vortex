@@ -53,6 +53,8 @@ latency, power consumption, and resource utilization on the FPGA.
 [google doc](https://docs.google.com/document/d/1TKFeWRtvvfIE7FpOwqvBslruGUJESe4jnbEJp2bhVT4/edit#)
 [bfloat-wikichip](https://en.wikichip.org/wiki/brain_floating-point_format)
 [vortex](https://github.com/vortexgpgpu/vortex)
+[canvas group](https://gatech.instructure.com/groups/305538)
+
 
 ## Deadlines
 HW6 + Vortex Tutorials:	4/6 (T)
