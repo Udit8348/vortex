@@ -17,13 +17,7 @@ void kernel_iadd(int task_id, kernel_arg_t* arg) {
 
 	// float test = vx_bfadd_16(-1.0, 1.0);
 	float e = 1.0;
-	float test = e + src0_ptr[0]; // I want this instruction to get compiled as a floating point instrucion
-	// dont want test to get optimized out
-	vx_printf("ONE PLUS ONE %f\n", test);
-	
-	if (test == 0.1) {
-		test = 0;
-	}
+	volatile float test = e + src0_ptr[0];
 
 
 	for (uint32_t i = 0; i < count; ++i) {
