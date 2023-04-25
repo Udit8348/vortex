@@ -1,0 +1,4 @@
+main.o: main.cpp \
+ /export/nethome/usubramanya3/vortex/driver/include/vortex.h \
+ /export/nethome/usubramanya3/vortex/runtime/../hw/VX_config.h \
+ testcases.h common.h
