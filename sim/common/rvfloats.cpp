@@ -1,4 +1,5 @@
 #include "rvfloats.h"
+#include "bfloat.h"
 #include <stdio.h>
 
 extern "C" {
@@ -11,9 +12,15 @@ extern "C" {
 #define F64_SIGN 0x8000000000000000
 
 inline float32_t to_float32_t(uint32_t x) { return float32_t{x}; }
+
+inline float to_float(uint32_t x) { return float{x}; }
+
 inline float64_t to_float64_t(uint64_t x) { return float64_t{x}; }
 
 inline uint32_t from_float32_t(float32_t x) { return uint32_t(x.v); }
+
+inline uint32_t from_float(float x) { return uint32_t(x); }
+
 inline uint64_t from_float64_t(float64_t x) { return uint64_t(x.v); }
 
 inline uint32_t get_fflags() {
@@ -28,6 +35,17 @@ inline uint32_t get_fflags() {
 extern "C" {
 #endif
 
+
+uint32_t rv_bfadd(uint32_t a, uint32_t b) {
+  // auto r = f32_add(to_float32_t(a), to_float32_t(b));
+  vortex::BrainFloat A(a);
+  vortex::BrainFloat B(b);
+  printf("here okay?\n");
+  vortex::BrainFloat C = A + B;
+  printf("here okay pt2\n");
+  return C.to_uint();
+}
+
 uint32_t rv_fadd_s(uint32_t a, uint32_t b, uint32_t frm, uint32_t* fflags) {
   softfloat_roundingMode = frm;
   auto r = f32_add(to_float32_t(a), to_float32_t(b));
@@ -41,6 +59,18 @@ uint64_t rv_fadd_d(uint64_t a, uint64_t b, uint32_t frm, uint32_t* fflags) {
   if (fflags) { *fflags = get_fflags(); }
   return from_float64_t(r);
 }
+
+// RV16BF or rv_bf<func>()
+
+/*
+vortex::BrainFloat rv_bfadd(uint32_t a, uint32_t b) {
+  
+
+  return a + b;
+}
+*/
+
+
 
 uint32_t rv_fsub_s(uint32_t a, uint32_t b, uint32_t frm, uint32_t* fflags) {
   softfloat_roundingMode = frm;

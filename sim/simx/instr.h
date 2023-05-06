@@ -27,6 +27,8 @@ enum Opcode {
   FMSUB     = 0x47,
   FMNMSUB   = 0x4b,
   FMNMADD   = 0x4f,
+  // BrainFloat Extension
+  BF        = 0x2b,
   // Vector Extension  
   VSET      = 0x57,
   // GPGPU Extension

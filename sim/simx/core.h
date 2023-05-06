@@ -144,6 +144,7 @@ private:
   std::vector<WarpMask> barriers_;  
   std::vector<uint32_t> csrs_;
   std::vector<Byte> fcsrs_;
+  uint32_t isBF;
   std::vector<IBuffer> ibuffers_;
   Scoreboard scoreboard_;
   std::vector<ExeUnit::Ptr> exe_units_;

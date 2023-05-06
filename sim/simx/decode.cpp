@@ -44,6 +44,7 @@ static const std::unordered_map<Opcode, struct InstTableEntry_t> sc_instTable = 
   {Opcode::GPU,        {false, InstType::R4_TYPE}},
   {Opcode::R_INST_W,   {false, InstType::R_TYPE}},
   {Opcode::I_INST_W,   {false, InstType::I_TYPE}},
+  {Opcode::BF,         {false, InstType::R_TYPE}},
 };
 
 enum Constants {
@@ -340,10 +341,6 @@ static const char* op_string(const Instr &instr) {
       std::abort();
     }
   case Opcode::FMADD:{
-    #ifdef BF16
-      std::cout << "========= HERE for BF16 ==========" << std::endl;
-    #endif
-    std::cout << "func2: " << func2 << std::endl;
     return func2 ? "FMADD.D" : "FMADD.S";
   }   
   case Opcode::FMSUB:   return func2 ? "FMSUB.D" : "FMSUB.S";
@@ -374,6 +371,13 @@ static const char* op_string(const Instr &instr) {
     default:
       std::abort();
     }
+  case Opcode::BF:
+    switch (func3) {
+    case 0: return "BFADD";
+    default:
+      std::abort();
+    }
+  // end case  
   default:
     std::abort();
   }
@@ -435,6 +439,7 @@ std::shared_ptr<Instr> Decoder::decode(uint32_t code) const {
   auto rs3 = (code >> shift_rs3) & mask_reg;
 
   auto op_it = sc_instTable.find(op);
+
   if (op_it == sc_instTable.end()) {
     std::cout << std::hex << "Error: invalid opcode: 0x" << op << std::endl;
     return nullptr;

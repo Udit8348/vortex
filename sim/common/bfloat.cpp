@@ -2,6 +2,8 @@
 
 using namespace vortex;
 
+#define DEBUG_BITS 1
+
 // Prints the binary representation of a number n up to i-bits.
 void BrainFloat::printBinary(int n, int i) {
     int k;
@@ -16,7 +18,17 @@ void BrainFloat::printBinary(int n, int i) {
 // constructor for float -> BrainFloat
 BrainFloat::BrainFloat(float x) {
     in_mem.f = x;
-    print(in_mem);
+    #ifdef DEBUG_BITS
+        print(in_mem);
+    #endif
+}
+
+// constructor for unsigned int -> BrainFloat
+BrainFloat::BrainFloat(uint32_t x) {
+    in_mem.t = x;
+    #ifdef DEBUG_BITS
+        print(in_mem);
+    #endif
 }
 
 // construct individual components of BrainFloat
@@ -24,7 +36,9 @@ BrainFloat::BrainFloat(uint8_t mantissa, uint8_t exponent, bool sign) {
     in_mem.parts.mantissa = mantissa & 0x7F;
     in_mem.parts.exponent = exponent;
     in_mem.parts.sign = (int) sign;
-    print(in_mem);
+    #ifdef DEBUG_BITS
+        print(in_mem);
+    #endif
 }
     
 void BrainFloat::print(bfloat16 b) {
@@ -41,6 +55,10 @@ float BrainFloat::to_float() {
     double exp = in_mem.parts.exponent - 127;
     uint8_t mantissa = in_mem.parts.mantissa;
     return std::pow(-1, sign) * std::pow(2, exp) * (1+(mantissa / std::pow(2,7)));
+}
+
+float BrainFloat::to_uint() {
+    return in_mem.t;
 }
 
 // toggle sign-bit
@@ -166,7 +184,7 @@ BrainFloat vortex::operator*(const BrainFloat &a, const BrainFloat &b) {
         return BrainFloat(0, 0xFF, product_sign);
     }
     a_mantissa = a.in_mem.parts.mantissa | 0x0080; // Add implicit bit
-    b_mantissa = b.in_mem.parts.mantissa | 0x0080; // Add implicit bi
+    b_mantissa = b.in_mem.parts.mantissa | 0x0080; // Add implicit bit
 
     std::bitset<8> bits(a_exp);
     std::cout << "Binary a exp: " << bits << std::endl;

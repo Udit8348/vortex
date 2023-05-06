@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <util.h>
 #include <rvfloats.h>
+#include <bfloat.h>
 #include "warp.h"
 #include "instr.h"
 #include "core.h"
@@ -889,13 +890,27 @@ void Warp::execute(const Instr &instr, pipeline_trace_t *trace) {
       uint32_t frm = get_fpu_rm(func3, core_, t, id_);
       uint32_t fflags = 0;
       switch (func7) {
-      case 0x00: { // RV32F: FADD.S
-        if (checkBoxedArgs(&rddata[t].f, rsdata[t][0].f, rsdata[t][1].f, &fflags)) {
+      case 0x00: { 
+        // IEEE-754 Single Precision Operation
+        if(core_->get_csr(0x004, 0, 0) == 0) {
+          // RV32F: FADD.S
+          if (checkBoxedArgs(&rddata[t].f, rsdata[t][0].f, rsdata[t][1].f, &fflags)) {
           rddata[t].f = nan_box(rv_fadd_s(rsdata[t][0].f, rsdata[t][1].f, frm, &fflags));
-        }
-        trace->fpu.type = FpuType::FMA;
-        trace->used_fregs.set(rsrc0);
-        trace->used_fregs.set(rsrc1);
+          }
+          trace->fpu.type = FpuType::FMA;
+          trace->used_fregs.set(rsrc0);
+          trace->used_fregs.set(rsrc1);
+        } else {
+          // BrainFloat: Add
+          if (checkBoxedArgs(&rddata[t].f, rsdata[t][0].f, rsdata[t][1].f, &fflags)) {
+            rddata[t].f = nan_box(rv_bfadd(rsdata[t][0].f, rsdata[t][1].f));
+            // rddata[t].f = nan_box(rv_fadd_s(rsdata[t][0].f, rsdata[t][1].f, frm, &fflags));
+          }
+          trace->fpu.type = FpuType::FMA;
+          trace->used_fregs.set(rsrc0);
+          trace->used_fregs.set(rsrc1);
+          std::cout << "add bfs using rv floats complete?" << std::endl;
+        }  
         break;
       }
       case 0x01: { // RV32D: FADD.D
@@ -1239,17 +1254,10 @@ void Warp::execute(const Instr &instr, pipeline_trace_t *trace) {
       uint32_t fflags = 0;
       switch (opcode) {
       case FMADD:
-        if (func2)
+        if (func2) {
           // RV32D: FMADD.D
-          #ifndef BF16
-            rddata[t].f = rv_fmadd_d(rsdata[t][0].f, rsdata[t][1].f, rsdata[t][2].f, frm, &fflags);
-          #endif
-
-          #ifdef BF16
-            // see if BF16 macro is working -- purposely fail test output
-            rddata[t].f = 0;
-          #endif
-
+          rddata[t].f = rv_fmadd_d(rsdata[t][0].f, rsdata[t][1].f, rsdata[t][2].f, frm, &fflags);
+        }
         else
           // RV32F: FMADD.S
           rddata[t].f = nan_box(rv_fmadd_s(rsdata[t][0].f, rsdata[t][1].f, rsdata[t][2].f, frm, &fflags));
@@ -1457,6 +1465,24 @@ void Warp::execute(const Instr &instr, pipeline_trace_t *trace) {
       }
       break;
     default:
+      std::abort();
+    }
+  } break;
+  case BF: {    
+    switch (func3) {
+    case 0: { // BFADD
+      // later: fix traces so that they do not create core dumps
+      for (uint32_t t = 0; t < num_threads; ++t) {
+        if (!tmask_.test(t))
+          continue;
+        std::cout << "operand one: " << std::hex << rsdata[t][0].f << " operand two: " << rsdata[t][1].f << std::endl;
+        rddata[t].f = rsdata[t][0].f + rsdata[t][1].f;
+        // rddata[t].f = 0;
+      }
+      // rd_write = true;
+    } break;
+    default:
+      // BF end
       std::abort();
     }
   } break;

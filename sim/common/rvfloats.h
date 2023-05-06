@@ -75,6 +75,10 @@ uint64_t rv_fmax_d(uint64_t a, uint64_t b, uint32_t* fflags);
 uint32_t rv_dtof(uint64_t a);
 uint64_t rv_ftod(uint32_t a);
 
+///////////////////////////////////////////////////////////////////////////////
+uint32_t rv_bfadd(uint32_t a, uint32_t b);
+
+
 #ifdef __cplusplus
 }
 #endif

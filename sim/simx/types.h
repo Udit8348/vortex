@@ -164,6 +164,7 @@ enum class FpuType {
   FDIV,
   FSQRT,
   FCVT,
+  BF16,
 };
 
 inline std::ostream &operator<<(std::ostream &os, const FpuType& type) {
@@ -173,6 +174,7 @@ inline std::ostream &operator<<(std::ostream &os, const FpuType& type) {
   case FpuType::FDIV:  os << "FDIV"; break;
   case FpuType::FSQRT: os << "FSQRT"; break;
   case FpuType::FCVT:  os << "FCVT"; break;
+  case FpuType::BF16:  os << "Brain Float"; break;
   }
   return os;
 }

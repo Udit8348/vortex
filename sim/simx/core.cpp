@@ -160,6 +160,7 @@ void Core::reset() {
   issued_instrs_ = 0;
   committed_instrs_ = 0;
   csr_tex_unit_ = 0;
+  isBF = 0; // dont use brainfloat by default
   ecall_ = false;
   ebreak_ = false;
   perf_mem_pending_reads_ = 0;
@@ -466,6 +467,8 @@ uint32_t Core::get_csr(uint32_t addr, uint32_t tid, uint32_t wid) {
     return (fcsrs_.at(wid) >> 5);
   case CSR_FCSR:
     return fcsrs_.at(wid);
+  case CSR_BF:
+    return isBF;
   case CSR_WTID:
     // Warp threadID
     return tid;
@@ -651,7 +654,9 @@ void Core::set_csr(uint32_t addr, uint32_t value, uint32_t /*tid*/, uint32_t wid
     fcsrs_.at(wid) = (fcsrs_.at(wid) & ~0xE0) | (value << 5);
   } else if (addr == CSR_FCSR) {
     fcsrs_.at(wid) = value & 0xff;
-  } else 
+  } else if (addr == CSR_BF) {
+    isBF = value;
+  }
 #ifdef EXT_TEX_ENABLE
   if (addr == CSR_TEX_UNIT) {
     csr_tex_unit_ = value;

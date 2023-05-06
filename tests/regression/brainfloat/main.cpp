@@ -173,6 +173,7 @@ int main(int argc, char *argv[]) {
   // allocate device memory
   std::cout << "allocate device memory" << std::endl;  
 
+  // since the buf_size is 4096 (dec) each addres is separated by 0x1000 (starting at addr 0)
   RT_CHECK(vx_mem_alloc(device, buf_size, &value));
   kernel_arg.src0_addr = value;
   RT_CHECK(vx_mem_alloc(device, buf_size, &value));
@@ -183,11 +184,14 @@ int main(int argc, char *argv[]) {
   kernel_arg.num_tasks = num_tasks;
   kernel_arg.task_size = count;
 
+  // simply print the starting addresses, but we have not allocated them
+  // some external driver might be setting the actual values in these buffers
   std::cout << "dev_src0=" << std::hex << kernel_arg.src0_addr << std::dec << std::endl;
   std::cout << "dev_src1=" << std::hex << kernel_arg.src1_addr << std::dec << std::endl;
   std::cout << "dev_dst=" << std::hex << kernel_arg.dst_addr << std::dec << std::endl;
   
   // allocate shared memory  
+  // what are we sharing mem between?
   std::cout << "allocate shared memory" << std::endl;
   RT_CHECK(vx_buf_alloc(device, sizeof(kernel_arg_t), &arg_buf));
   RT_CHECK(vx_buf_alloc(device, buf_size, &src1_buf));
@@ -204,6 +208,9 @@ int main(int argc, char *argv[]) {
     std::cout << "upload kernel argument" << std::endl;
     kernel_arg.testid = t;
     memcpy((void*)vx_host_ptr(arg_buf), &kernel_arg, sizeof(kernel_arg_t));
+
+    // in the device we can access KERNEL_ARG_DEV_MEM_ADDR for a pointer to the kernel args
+    // function -> arg_buf -> KERNEL_ARG_DEV...
     RT_CHECK(vx_copy_to_dev(arg_buf, KERNEL_ARG_DEV_MEM_ADDR, sizeof(kernel_arg_t), 0));
 
     // get test arguments
