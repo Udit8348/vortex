@@ -70,10 +70,10 @@ run-rtlsim: $(PROJECT) kernel.bin
 	$(CXX) $(CXXFLAGS) -MM $^ > .depend;
 
 clean:
-	rm -rf $(PROJECT) *.o .depend
+	rm -rf $(PROJECT) *.o .depend *.log
 
 clean-all: clean
-	rm -rf *.elf *.bin *.dump
+	rm -rf *.elf *.bin *.dump *.log
 
 ifneq ($(MAKECMDGOALS),clean)
     -include .depend

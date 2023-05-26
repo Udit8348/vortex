@@ -1,5 +1,6 @@
 all:
 	$(MAKE) -C basic
+	$(MAKE) -C brainfloat
 	$(MAKE) -C demo
 	$(MAKE) -C dogfood
 	$(MAKE) -C mstress
@@ -14,6 +15,7 @@ all:
 
 run-simx:
 	$(MAKE) -C basic run-simx
+	$(MAKE) -C brainfloat run-simx
 	$(MAKE) -C demo run-simx
 	$(MAKE) -C dogfood run-simx
 	$(MAKE) -C mstress run-simx
@@ -28,6 +30,7 @@ run-simx:
 
 run-rtlsim:
 	$(MAKE) -C basic run-rtlsim
+	$(MAKE) -C brainfloat run-rtlsim
 	$(MAKE) -C demo run-rtlsim
 	$(MAKE) -C dogfood run-rtlsim
 	$(MAKE) -C mstress run-rtlsim
@@ -42,6 +45,7 @@ run-rtlsim:
 
 run-vlsim:
 	$(MAKE) -C basic run-vlsim
+	$(MAKE) -C brainfloat run-vlsim
 	$(MAKE) -C demo run-vlsim
 	$(MAKE) -C dogfood run-vlsim
 	$(MAKE) -C mstress run-vlsim
@@ -56,6 +60,7 @@ run-vlsim:
 
 clean:
 	$(MAKE) -C basic clean
+	$(MAKE) -C brainfloat clean
 	$(MAKE) -C demo clean
 	$(MAKE) -C dogfood clean
 	$(MAKE) -C mstress clean
@@ -70,6 +75,7 @@ clean:
 
 clean-all:
 	$(MAKE) -C basic clean-all
+	$(MAKE) -C brainfloat clean-all
 	$(MAKE) -C demo clean-all
 	$(MAKE) -C dogfood clean-all
 	$(MAKE) -C mstress clean-all
