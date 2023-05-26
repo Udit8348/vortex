@@ -44,7 +44,6 @@ static const std::unordered_map<Opcode, struct InstTableEntry_t> sc_instTable = 
   {Opcode::GPU,        {false, InstType::R4_TYPE}},
   {Opcode::R_INST_W,   {false, InstType::R_TYPE}},
   {Opcode::I_INST_W,   {false, InstType::I_TYPE}},
-  {Opcode::BF,         {false, InstType::R_TYPE}},
 };
 
 enum Constants {
@@ -371,13 +370,6 @@ static const char* op_string(const Instr &instr) {
     default:
       std::abort();
     }
-  case Opcode::BF:
-    switch (func3) {
-    case 0: return "BFADD";
-    default:
-      std::abort();
-    }
-  // end case  
   default:
     std::abort();
   }

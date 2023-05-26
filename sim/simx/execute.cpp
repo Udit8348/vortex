@@ -1468,24 +1468,6 @@ void Warp::execute(const Instr &instr, pipeline_trace_t *trace) {
       std::abort();
     }
   } break;
-  case BF: {    
-    switch (func3) {
-    case 0: { // BFADD
-      // later: fix traces so that they do not create core dumps
-      for (uint32_t t = 0; t < num_threads; ++t) {
-        if (!tmask_.test(t))
-          continue;
-        std::cout << "operand one: " << std::hex << rsdata[t][0].f << " operand two: " << rsdata[t][1].f << std::endl;
-        rddata[t].f = rsdata[t][0].f + rsdata[t][1].f;
-        // rddata[t].f = 0;
-      }
-      // rd_write = true;
-    } break;
-    default:
-      // BF end
-      std::abort();
-    }
-  } break;
   case VSET: {
     uint32_t VLEN = core_->arch().vsize() * 8;
     uint32_t VLMAX = (instr.getVlmul() * VLEN) / instr.getVsew();
