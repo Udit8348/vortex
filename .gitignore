@@ -1,0 +1,15 @@
+# macOS
+**/.DS_Store
+**/._.DS_Store
+
+# editor
+.vscode/
+
+#simX
+blackbox.*.cache
+
+# verilator (trace files can easily exceed github file upload limits)
+*.vcd
+
+# dev
+*.log
