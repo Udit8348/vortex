@@ -1,2 +1,4 @@
 VX_config.h
 /obj_dir/*
+*.a
+rtlsim
