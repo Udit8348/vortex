@@ -13,8 +13,6 @@ extern "C" {
 
 inline float32_t to_float32_t(uint32_t x) { return float32_t{x}; }
 
-inline float to_float(uint32_t x) { return float{x}; }
-
 inline float64_t to_float64_t(uint64_t x) { return float64_t{x}; }
 
 inline uint32_t from_float32_t(float32_t x) { return uint32_t(x.v); }
@@ -37,12 +35,9 @@ extern "C" {
 
 
 uint32_t rv_bfadd(uint32_t a, uint32_t b) {
-  // auto r = f32_add(to_float32_t(a), to_float32_t(b));
   vortex::BrainFloat A(a);
   vortex::BrainFloat B(b);
-  printf("here okay?\n");
   vortex::BrainFloat C = A + B;
-  printf("here okay pt2\n");
   return C.to_uint();
 }
 
@@ -60,17 +55,12 @@ uint64_t rv_fadd_d(uint64_t a, uint64_t b, uint32_t frm, uint32_t* fflags) {
   return from_float64_t(r);
 }
 
-// RV16BF or rv_bf<func>()
-
-/*
-vortex::BrainFloat rv_bfadd(uint32_t a, uint32_t b) {
-  
-
-  return a + b;
+uint32_t rv_bfsub(uint32_t a, uint32_t b) {
+  vortex::BrainFloat A(a);
+  vortex::BrainFloat B(b);
+  vortex::BrainFloat C = A - B;
+  return C.to_uint();
 }
-*/
-
-
 
 uint32_t rv_fsub_s(uint32_t a, uint32_t b, uint32_t frm, uint32_t* fflags) {
   softfloat_roundingMode = frm;
@@ -84,6 +74,13 @@ uint64_t rv_fsub_d(uint64_t a, uint64_t b, uint32_t frm, uint32_t* fflags) {
   auto r = f64_sub(to_float64_t(a), to_float64_t(b));
   if (fflags) { *fflags = get_fflags(); }
   return from_float64_t(r);
+}
+
+uint32_t rv_bfmul(uint32_t a, uint32_t b) {
+  vortex::BrainFloat A(a);
+  vortex::BrainFloat B(b);
+  vortex::BrainFloat C = A * B;
+  return C.to_uint();
 }
 
 uint32_t rv_fmul_s(uint32_t a, uint32_t b, uint32_t frm, uint32_t* fflags) {
@@ -162,6 +159,13 @@ uint64_t rv_fnmsub_d(uint64_t a, uint64_t b, uint64_t c, uint32_t frm, uint32_t*
   auto r = f64_mulAdd(to_float64_t(a_neg), to_float64_t(b), to_float64_t(c));
   if (fflags) { *fflags = get_fflags(); }
   return from_float64_t(r);
+}
+
+uint32_t rv_bfdiv(uint32_t a, uint32_t b) {
+  vortex::BrainFloat A(a);
+  vortex::BrainFloat B(b);
+  vortex::BrainFloat C = A / B;
+  return C.to_uint();
 }
 
 uint32_t rv_fdiv_s(uint32_t a, uint32_t b, uint32_t frm, uint32_t* fflags) {

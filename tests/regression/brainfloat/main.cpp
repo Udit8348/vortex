@@ -22,9 +22,12 @@
 class TestMngr {
 public:
   TestMngr() {
-    this->add_test("iadd", new Test_IADD());
     #ifdef EXT_F_ENABLE
     this->add_test("fadd", new Test_FADD());
+    this->add_test("fsub", new Test_FSUB());
+    this->add_test("fmul", new Test_FMUL());
+    this->add_test("fdiv", new Test_FDIV());
+    this->add_test("fdiv2", new Test_FDIV2());
     #endif
   }
 

@@ -120,3 +120,14 @@ Contributions
 TODO: 2-3 page report, more details
 maybe start the presentation slides
 timeline so far, and future plan
+
+
+## TODO: How to gen VX_config
+- need to run make from the bottom directory
+
+## TODO: Softfloat Lib Organization
+- remove softfloat library from the simfolder since we already have it in the thirdparty folder
+- quick fix: gitignore the folder as it stands in the sim common directory
+
+## Organization
+- when you are about to commit, you might need to go to some directories and specify make clean and for tests/regression you will need to say make clean-all for full clean up

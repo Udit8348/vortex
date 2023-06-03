@@ -892,10 +892,10 @@ void Warp::execute(const Instr &instr, pipeline_trace_t *trace) {
       switch (func7) {
       case 0x00: { 
         // IEEE-754 Single Precision Operation
-        if(core_->get_csr(0x004, 0, 0) == 0) {
+        if(!core_->get_csr(0x004, 0, 0)) {
           // RV32F: FADD.S
           if (checkBoxedArgs(&rddata[t].f, rsdata[t][0].f, rsdata[t][1].f, &fflags)) {
-          rddata[t].f = nan_box(rv_fadd_s(rsdata[t][0].f, rsdata[t][1].f, frm, &fflags));
+            rddata[t].f = nan_box(rv_fadd_s(rsdata[t][0].f, rsdata[t][1].f, frm, &fflags));
           }
           trace->fpu.type = FpuType::FMA;
           trace->used_fregs.set(rsrc0);
@@ -904,12 +904,10 @@ void Warp::execute(const Instr &instr, pipeline_trace_t *trace) {
           // BrainFloat: Add
           if (checkBoxedArgs(&rddata[t].f, rsdata[t][0].f, rsdata[t][1].f, &fflags)) {
             rddata[t].f = nan_box(rv_bfadd(rsdata[t][0].f, rsdata[t][1].f));
-            // rddata[t].f = nan_box(rv_fadd_s(rsdata[t][0].f, rsdata[t][1].f, frm, &fflags));
           }
           trace->fpu.type = FpuType::FMA;
           trace->used_fregs.set(rsrc0);
           trace->used_fregs.set(rsrc1);
-          std::cout << "add bfs using rv floats complete?" << std::endl;
         }  
         break;
       }
@@ -920,13 +918,25 @@ void Warp::execute(const Instr &instr, pipeline_trace_t *trace) {
         trace->used_fregs.set(rsrc1);
         break;
       }
-      case 0x04: { // RV32F: FSUB.S
-        if (checkBoxedArgs(&rddata[t].f, rsdata[t][0].f, rsdata[t][1].f, &fflags)) {
-          rddata[t].f = nan_box(rv_fsub_s(rsdata[t][0].f, rsdata[t][1].f, frm, &fflags));
+      case 0x04: { 
+      // IEEE-754 Single Precision Operation
+        if(!core_->get_csr(0x004, 0, 0)) {
+          // RV32F: FSUB.S
+          if (checkBoxedArgs(&rddata[t].f, rsdata[t][0].f, rsdata[t][1].f, &fflags)) {
+            rddata[t].f = nan_box(rv_fsub_s(rsdata[t][0].f, rsdata[t][1].f, frm, &fflags));
+          }
+          trace->fpu.type = FpuType::FMA;
+          trace->used_fregs.set(rsrc0);
+          trace->used_fregs.set(rsrc1);
+        } else {
+          // BrainFloat: Sub
+          if (checkBoxedArgs(&rddata[t].f, rsdata[t][0].f, rsdata[t][1].f, &fflags)) {
+            rddata[t].f = nan_box(rv_bfsub(rsdata[t][0].f, rsdata[t][1].f));
+          }
+          trace->fpu.type = FpuType::FMA;
+          trace->used_fregs.set(rsrc0);
+          trace->used_fregs.set(rsrc1);
         }
-        trace->fpu.type = FpuType::FMA;
-        trace->used_fregs.set(rsrc0);
-        trace->used_fregs.set(rsrc1);
         break;
       }
       case 0x05: { // RV32D: FSUB.D
@@ -936,13 +946,25 @@ void Warp::execute(const Instr &instr, pipeline_trace_t *trace) {
         trace->used_fregs.set(rsrc1);
         break;
       }
-      case 0x08: { // RV32F: FMUL.S
-        if (checkBoxedArgs(&rddata[t].f, rsdata[t][0].f, rsdata[t][1].f, &fflags)) {
-          rddata[t].f = nan_box(rv_fmul_s(rsdata[t][0].f, rsdata[t][1].f, frm, &fflags));
-        }
-        trace->fpu.type = FpuType::FMA;
-        trace->used_fregs.set(rsrc0);
-        trace->used_fregs.set(rsrc1);
+      case 0x08: {
+        // IEEE-754 Single Precision Operation
+        if(!core_->get_csr(0x004, 0, 0)) {
+          // RV32F: FMUL.S
+          if (checkBoxedArgs(&rddata[t].f, rsdata[t][0].f, rsdata[t][1].f, &fflags)) {
+            rddata[t].f = nan_box(rv_fmul_s(rsdata[t][0].f, rsdata[t][1].f, frm, &fflags));
+          }
+          trace->fpu.type = FpuType::FMA;
+          trace->used_fregs.set(rsrc0);
+          trace->used_fregs.set(rsrc1);
+        } else {
+          // BrainFloat: Mul
+          if (checkBoxedArgs(&rddata[t].f, rsdata[t][0].f, rsdata[t][1].f, &fflags)) {
+            rddata[t].f = nan_box(rv_bfmul(rsdata[t][0].f, rsdata[t][1].f));
+          }
+          trace->fpu.type = FpuType::FMA;
+          trace->used_fregs.set(rsrc0);
+          trace->used_fregs.set(rsrc1);
+        }  
         break;
       }
       case 0x09: { // RV32D: FMUL.D
@@ -952,13 +974,25 @@ void Warp::execute(const Instr &instr, pipeline_trace_t *trace) {
         trace->used_fregs.set(rsrc1);
         break;
       }
-      case 0x0c: { // RV32F: FDIV.S
-        if (checkBoxedArgs(&rddata[t].f, rsdata[t][0].f, rsdata[t][1].f, &fflags)) {
-          rddata[t].f = nan_box(rv_fdiv_s(rsdata[t][0].f, rsdata[t][1].f, frm, &fflags));
-        }
-        trace->fpu.type = FpuType::FDIV;
-        trace->used_fregs.set(rsrc0);
-        trace->used_fregs.set(rsrc1);
+      case 0x0c: { 
+        // IEEE-754 Single Precision Operation
+        if(!core_->get_csr(0x004, 0, 0)) {
+          // RV32F: FDIV.S
+          if (checkBoxedArgs(&rddata[t].f, rsdata[t][0].f, rsdata[t][1].f, &fflags)) {
+            rddata[t].f = nan_box(rv_fdiv_s(rsdata[t][0].f, rsdata[t][1].f, frm, &fflags));
+          }
+          trace->fpu.type = FpuType::FMA;
+          trace->used_fregs.set(rsrc0);
+          trace->used_fregs.set(rsrc1);
+        } else {
+          // BrainFloat: Div
+          if (checkBoxedArgs(&rddata[t].f, rsdata[t][0].f, rsdata[t][1].f, &fflags)) {
+            rddata[t].f = nan_box(rv_bfdiv(rsdata[t][0].f, rsdata[t][1].f));
+          }
+          trace->fpu.type = FpuType::FMA;
+          trace->used_fregs.set(rsrc0);
+          trace->used_fregs.set(rsrc1);
+        }  
         break;
       }
       case 0x0d: { // RV32D: FDIV.D

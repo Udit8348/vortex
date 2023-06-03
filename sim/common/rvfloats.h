@@ -77,6 +77,10 @@ uint64_t rv_ftod(uint32_t a);
 
 ///////////////////////////////////////////////////////////////////////////////
 uint32_t rv_bfadd(uint32_t a, uint32_t b);
+uint32_t rv_bfsub(uint32_t a, uint32_t b);
+uint32_t rv_bfmul(uint32_t a, uint32_t b);
+uint32_t rv_bfdiv(uint32_t a, uint32_t b);
+
 
 
 #ifdef __cplusplus

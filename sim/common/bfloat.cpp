@@ -2,8 +2,6 @@
 
 using namespace vortex;
 
-#define DEBUG_BITS 1
-
 // Prints the binary representation of a number n up to i-bits.
 void BrainFloat::printBinary(int n, int i) {
     int k;
