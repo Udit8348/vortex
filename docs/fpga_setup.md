@@ -1,4 +1,4 @@
-# FPGA Startup and Configuration Guide 
+# FPGA Startup and Configuration Guide
 
 OPAE Environment Setup
 ----------------------
@@ -9,9 +9,6 @@ OPAE Environment Setup
     $ export C_INCLUDE_PATH=$OPAE_HOME/include:$C_INCLUDE_PATH
     $ export LIBRARY_PATH=$OPAE_HOME/lib:$LIBRARY_PATH
     $ export LD_LIBRARY_PATH=$OPAE_HOME/lib:$LD_LIBRARY_PATH
-    $ export RISCV_TOOLCHAIN_PATH=/opt/riscv-gnu-toolchain
-    $ export PATH=:/opt/verilator/bin:$PATH
-    $ export VERILATOR_ROOT=/opt/verilator
 
 OPAE Build
 ------------------
@@ -58,7 +55,7 @@ If the build fails and you need to restart it, clean up the build folder using t
 
 The file `vortex_afu.gbs` should exist when the build is done:
 
-    $ ls -lsa <build_dir>/vortex_afu.gbs
+    $ ls -lsa <build_dir>/synth/vortex_afu.gbs
 
 
 Signing the bitstream and Programming the FPGA
@@ -73,5 +70,5 @@ FPGA sample test running OpenCL sgemm kernel
 
 Run the following from the Vortex root directory
 
-    $ ./ci/blackbox.sh --driver=fpga --app=sgemm --args="-n64"
+    $ TARGET=fpga ./ci/blackbox.sh --driver=opae --app=sgemm --args="-n128"
 
