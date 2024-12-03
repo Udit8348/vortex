@@ -48,10 +48,18 @@ Complete list of machines can be found [here](https://gt-crnch-rg.readthedocs.io
 Once you’ve connected to the CRNCH login node, you can use the Slurm scheduler to request an interactive job using `salloc`. This [page](https://gt-crnch-rg.readthedocs.io/en/main/general/using-slurm.html) explains why we use Slurm to request resources. Documentation for `salloc` can be found [here](https://gt-crnch-rg.readthedocs.io/en/main/general/using-slurm-examples.html). And here.
 
 
-To request 16 cores and 64GB of RAM for 6 hours on flubber9, a fpga dev node:
+To request 16 cores and 64GB of RAM for 8 hours on flubber1, a fpga dev node:
 ```bash
-salloc -p rg-fpga --nodes=1 --ntasks-per-node=16 --mem=64G --nodelist flubber1 --time=06:00:00
+salloc -p rg-fpga --nodes=1 --ntasks-per-node=16 --mem=64G --nodelist flubber1 --time=08:00:00
 ```
+
+| Note: In some cases, it might be better to directly `ssh` into the flubber node because if you disconnect from your slurm allocation, the synthesis will end. You can do this by `ssh`ing into crnch, and then `ssh`ing into the node that you need to run synthesis on.
+
+```
+ssh <your-gt-username>@rg-login.crnch.gatech.edu
+ssh flubber<1-9>
+```
+
 Synthesis for Xilinx Boards
 ----------------------
 Once you are logged in, you will need to complete some first time configurations. If you are interested in the Intel (Altera) synthesis steps, scroll down below.
@@ -67,36 +75,34 @@ $ source /tools/reconfig/xilinx/Vitis/2023.1/settings64.sh
 `platforminfo -l` which tells us the correct name of the platform installed on the current fpga node. It should be used for the `PLATFORM` variable below. Otherwise, if there is an error then there was an issue with the previous two commands.
 
 ### Install Vortex Toolchain
-The Xilinx synthesis process requires verilator to generate the bitstream. Eventually, you will need the whole toolchain to run the bitstream on the FPGA. Therefore, the Vortex toolchain and can be installed as follows. If you complete these steps properly, you should only need to complete them once and you can skip to `Activate Vortex Toolchain`
+The Xilinx synthesis process requires verilator to generate the bitstream. Eventually, you will need the whole toolchain to run the bitstream on the FPGA. Therefore, the Vortex toolchain and can be installed as follows. Since everything is stored in USERSCRATCH, you should only have to run this step: `./ci/toolchain_install.sh --all` once.
+
 ```
 # Make a build directory from root and configure scripts for your environment
-mkdir build && cd build && ../configure --tooldir=$HOME/tools
+mkdir build && cd build && ../configure --xlen=32 --tooldir=$HOME/tools
 
 # Install the whole prebuilt toolchain
 ./ci/toolchain_install.sh --all
 
-# Add environment variables to bashrc
-echo "source <full-path-to-vortex-root>/vortex/build/ci/toolchain_env.sh" >> ~/.bashrc
+# Source env
+source ./ci/toolchain_env.sh
 ```
 
-### Activate Vortex Toolchain
-```
-# From any directory
-source ~/.bashrc
 
 # Check environment setup
-verilator --version
-```
+
+To check if the toolchain is installed and functioning, this command should run properly
+`verilator --version`
 
 ### Build the FPGA Bitstream
-The root directory contains the path `hw/syn/xilinx/xrt` which has the makefile used to generate the Vortex bitstream.
+Exit the `build` directory and the root directory contains the path `hw/syn/xilinx/xrt` which has the makefile used to generate the Vortex bitstream. These files also exist in the build directory which was created in a eariler step, however the synthesis steps will not work from there.
 
 ```
     $ cd hw/syn/xilinx/xrt
     $ PREFIX=test1 PLATFORM=xilinx_u50_gen3x16_xdma_5_202210_1 TARGET=hw NUM_CORES=1 make > build_u250_hw_1c.log 2>&1 &
 ```
-Will run the synthesis under new build directory: BUILD_DIR := "\<PREFIX>\_\<PLATFORM>\_\<TARGET>"
-The generated bitstream will be located under <BUILD_DIR>/bin/vortex_afu.xclbin
+This will run the synthesis under new build directory: BUILD_DIR := "\<PREFIX>\_\<PLATFORM>\_\<TARGET>"
+If it comletes successfully, the generated bitstream will be located under <BUILD_DIR>/bin/vortex_afu.xclbin
 
 For long-running jobs, invocation of this makefile can be made of the following form:
 
@@ -107,18 +113,19 @@ For example:
 ```bash
 CONFIGS="-DL2_ENABLE -DDCACHE_SIZE=8192" PREFIX=build_4c_u280 NUM_CORES=4 TARGET=hw PLATFORM=xilinx_u280_gen3x16_xdma_1_202310_1 nohup make > build_u250_hw_4c.log 2>&1 &
 ```
-
-The build is complete when the bitstream file `vortex_afu.xclbin` exists in `<prefix directory name><platform baseName>hw|hw_emu/bin`.
+| You can check the status by checking the log file and contents of the `bin` directory.
 
 ### Running a Program on Xilinx FPGA
 
-The [blackbox.sh](./simulation.md) script within the build directory can be used to run a test with Vortex’s xrt driver using the following command:
+The [blackbox.sh](./simulation.md) script within the build directory can be used to run a test with Vortex’s xrt driver using the following command. Currently, apps can be any subfolder test under regression or opencl
 
 `FPGA_BIN_DIR=<path to bitstream directory> TARGET=hw|hw_emu PLATFORM=<platform baseName> ./ci/blackbox.sh --driver=xrt --app=<test name>`
 
 For example:
 
-```FPGA_BIN_DIR=<realpath> hw/syn/xilinx/xrt/build_4c_u280_xilinx_u280_gen3x16_xdma_1_202211_1_hw/bin TARGET=hw PLATFORM=xilinx_u280_gen3x16_xdma_1_202211_1 ./ci/blackbox.sh --driver=xrt --app=demo```
+```
+FPGA_BIN_DIR=`realpath /hw/syn/xilinx/xrt/test10_xilinx_u50_gen3x16_xdma_5_202210_1_hw/bin` TARGET=hw PLATFORM=xilinx_u50_gen3x16_xdma_5_202210_1 ./ci/blackbox.sh --driver=xrt --app=demo
+```
 
 Synthesis for Intel (Altera) Boards
 ----------------------
