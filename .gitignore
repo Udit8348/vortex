@@ -2,3 +2,6 @@
 /.vscode
 *.cache
 *.code-workspace
+
+# syn
+hw/syn/xilinx/xrt/test*/
