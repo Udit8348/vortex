@@ -14,8 +14,6 @@
 `ifndef VX_CONFIG_VH
 `define VX_CONFIG_VH
 
-
-
 `ifndef MIN
 `define MIN(x, y)   (((x) < (y)) ? (x) : (y))
 `endif
@@ -85,6 +83,10 @@
 `ifdef FLEN_32
     `define FPU_RV64F
 `endif
+`endif
+
+`ifndef VLEN
+`define VLEN 256
 `endif
 
 `ifndef NUM_CLUSTERS
@@ -170,8 +172,8 @@
 `define L3_LINE_SIZE `MEM_BLOCK_SIZE
 `endif
 
-`ifndef MEMORY_BANKS
-`define MEMORY_BANKS 2
+`ifndef PLATFORM_MEMORY_BANKS
+`define PLATFORM_MEMORY_BANKS 2
 `endif
 
 `ifdef XLEN_64
@@ -193,7 +195,7 @@
 `endif
 
 `ifdef VM_ENABLE
-`ifndef PAGE_TABLE_BASE_ADDR  
+`ifndef PAGE_TABLE_BASE_ADDR
 `define PAGE_TABLE_BASE_ADDR 64'h0F0000000
 `endif
 
@@ -218,7 +220,7 @@
 `endif
 
 `ifdef VM_ENABLE
-`ifndef PAGE_TABLE_BASE_ADDR  
+`ifndef PAGE_TABLE_BASE_ADDR
 `define PAGE_TABLE_BASE_ADDR 32'hF0000000
 `endif
 
@@ -239,7 +241,7 @@
 `ifndef IO_COUT_ADDR
 `define IO_COUT_ADDR    `IO_BASE_ADDR
 `endif
-`define IO_COUT_SIZE    `MEM_BLOCK_SIZE
+`define IO_COUT_SIZE    64
 
 `ifndef IO_MPM_ADDR
 `define IO_MPM_ADDR     (`IO_COUT_ADDR + `IO_COUT_SIZE)
@@ -303,13 +305,13 @@
         `ifndef VM_ADDR_MODE
         `define VM_ADDR_MODE SV32  //or BARE
         `endif
-        `ifndef PT_LEVEL 
+        `ifndef PT_LEVEL
         `define PT_LEVEL (2)
         `endif
         `ifndef PTE_SIZE
         `define PTE_SIZE (4)
         `endif
-        `ifndef NUM_PTE_ENTRY 
+        `ifndef NUM_PTE_ENTRY
         `define NUM_PTE_ENTRY (1024)
         `endif
         `ifndef PT_SIZE_LIMIT
@@ -319,13 +321,13 @@
         `ifndef VM_ADDR_MODE
         `define VM_ADDR_MODE SV39 //or BARE
         `endif
-        `ifndef PT_LEVEL 
+        `ifndef PT_LEVEL
         `define PT_LEVEL (3)
         `endif
         `ifndef PTE_SIZE
         `define PTE_SIZE (8)
         `endif
-        `ifndef NUM_PTE_ENTRY 
+        `ifndef NUM_PTE_ENTRY
         `define NUM_PTE_ENTRY (512)
         `endif
         `ifndef PT_SIZE_LIMIT
@@ -578,6 +580,10 @@
 `define ICACHE_REPL_POLICY 1
 `endif
 
+`ifndef ICACHE_MEM_PORTS
+`define ICACHE_MEM_PORTS 1
+`endif
+
 // Dcache Configurable Knobs //////////////////////////////////////////////////
 
 // Cache Enable
@@ -604,7 +610,7 @@
 
 // Number of Banks
 `ifndef DCACHE_NUM_BANKS
-`define DCACHE_NUM_BANKS `MIN(`NUM_LSU_LANES, 4)
+`define DCACHE_NUM_BANKS `MIN(DCACHE_NUM_REQS, 16)
 `endif
 
 // Core Response Queue Size
@@ -647,6 +653,15 @@
 `define DCACHE_REPL_POLICY 1
 `endif
 
+// Number of Memory Ports
+`ifndef L1_MEM_PORTS
+`ifdef L1_DISABLE
+`define L1_MEM_PORTS `MIN(DCACHE_NUM_REQS, `PLATFORM_MEMORY_BANKS)
+`else
+`define L1_MEM_PORTS `MIN(`DCACHE_NUM_BANKS, `PLATFORM_MEMORY_BANKS)
+`endif
+`endif
+
 // LMEM Configurable Knobs ////////////////////////////////////////////////////
 
 `ifndef LMEM_DISABLE
@@ -674,7 +689,7 @@
 
 // Number of Banks
 `ifndef L2_NUM_BANKS
-`define L2_NUM_BANKS `MIN(4, `NUM_SOCKETS)
+`define L2_NUM_BANKS `MIN(L2_NUM_REQS, 16)
 `endif
 
 // Core Response Queue Size
@@ -717,6 +732,15 @@
 `define L2_REPL_POLICY 1
 `endif
 
+// Number of Memory Ports
+`ifndef L2_MEM_PORTS
+`ifdef L2_ENABLE
+`define L2_MEM_PORTS `MIN(`L2_NUM_BANKS, `PLATFORM_MEMORY_BANKS)
+`else
+`define L2_MEM_PORTS `MIN(L2_NUM_REQS, `PLATFORM_MEMORY_BANKS)
+`endif
+`endif
+
 // L3cache Configurable Knobs /////////////////////////////////////////////////
 
 // Cache Size
@@ -726,7 +750,7 @@
 
 // Number of Banks
 `ifndef L3_NUM_BANKS
-`define L3_NUM_BANKS `MIN(8, `NUM_CLUSTERS)
+`define L3_NUM_BANKS `MIN(L3_NUM_REQS, 16)
 `endif
 
 // Core Response Queue Size
@@ -769,9 +793,13 @@
 `define L3_REPL_POLICY 1
 `endif
 
-// Number of Memory Ports from LLC
-`ifndef NUM_MEM_PORTS
-`define NUM_MEM_PORTS `MIN(`MEMORY_BANKS, `L3_NUM_BANKS)
+// Number of Memory Ports
+`ifndef L3_MEM_PORTS
+`ifdef L3_ENABLE
+`define L3_MEM_PORTS `MIN(`L3_NUM_BANKS, `PLATFORM_MEMORY_BANKS)
+`else
+`define L3_MEM_PORTS `MIN(L3_NUM_REQS, `PLATFORM_MEMORY_BANKS)
+`endif
 `endif
 
 // ISA Extensions /////////////////////////////////////////////////////////////
@@ -806,6 +834,12 @@
     `define EXT_M_ENABLED   0
 `endif
 
+`ifdef EXT_V_ENABLE
+    `define EXT_V_ENABLED   1
+`else
+    `define EXT_V_ENABLED   0
+`endif
+
 `ifdef EXT_ZICOND_ENABLE
     `define EXT_ZICOND_ENABLED 1
 `else
@@ -822,7 +856,7 @@
 `define ISA_STD_N           13
 `define ISA_STD_Q           16
 `define ISA_STD_S           18
-`define ISA_STD_U           20
+`define ISA_STD_V           21
 
 `define ISA_EXT_ICACHE      0
 `define ISA_EXT_DCACHE      1
@@ -859,7 +893,7 @@
                 | (0 << 18) /* S - Supervisor mode implemented */ \
                 | (0 << 19) /* T - Tentatively reserved for Transactional Memory extension */ \
                 | (1 << 20) /* U - User mode implemented */ \
-                | (0 << 21) /* V - Tentatively reserved for Vector extension */ \
+                | (`EXT_V_ENABLED << 21) /* V - Tentatively reserved for Vector extension */ \
                 | (0 << 22) /* W - Reserved */ \
                 | (1 << 23) /* X - Non-standard extensions present */ \
                 | (0 << 24) /* Y - Reserved */ \

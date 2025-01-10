@@ -31,7 +31,7 @@ DBG_SCOPE_FLAGS += -DDBG_SCOPE_ISSUE
 DBG_SCOPE_FLAGS += -DDBG_SCOPE_FETCH
 DBG_SCOPE_FLAGS += -DDBG_SCOPE_LSU
 
-# AFU parameters
+# Platform parameters
 ifeq (,$(findstring PLATFORM_MEMORY_BANKS,$(CONFIGS)))
 	CONFIGS += -DPLATFORM_MEMORY_BANKS=2
 endif
@@ -45,13 +45,10 @@ endif
 ifeq (,$(findstring PLATFORM_MEMORY_DATA_WIDTH,$(CONFIGS)))
 	CONFIGS += -DPLATFORM_MEMORY_DATA_WIDTH=512
 endif
-ifeq (,$(findstring PLATFORM_MEMORY_OFFSET,$(CONFIGS)))
-	CONFIGS += -DPLATFORM_MEMORY_OFFSET=0
-endif
 
 DBG_FLAGS += -DDEBUG_LEVEL=$(DEBUG) -DVCD_OUTPUT $(DBG_TRACE_FLAGS)
 
-SRCS = $(COMMON_DIR)/util.cpp $(COMMON_DIR)/mem.cpp $(COMMON_DIR)/rvfloats.cpp $(COMMON_DIR)/dram_sim.cpp
+SRCS = $(COMMON_DIR)/util.cpp $(COMMON_DIR)/mem.cpp $(COMMON_DIR)/softfloat_ext.cpp $(COMMON_DIR)/rvfloats.cpp $(COMMON_DIR)/dram_sim.cpp
 SRCS += $(DPI_DIR)/util_dpi.cpp $(DPI_DIR)/float_dpi.cpp
 SRCS += $(SRC_DIR)/xrt.cpp $(SRC_DIR)/xrt_sim.cpp
 

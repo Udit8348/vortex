@@ -90,18 +90,16 @@ module VX_fifo_queue #(
             end
         end
 
-        wire going_empty = (ALM_EMPTY == 1) ? alm_empty : (size[ADDRW-1:0] == ADDRW'(1));
-        wire bypass = push && (empty || (going_empty && pop));
-
         VX_dp_ram #(
             .DATAW (DATAW),
             .SIZE  (DEPTH),
             .LUTRAM (LUTRAM),
-            .RDW_MODE ("W")
+            .RDW_MODE ("W"),
+            .RADDR_REG (1)
         ) dp_ram (
             .clk   (clk),
             .reset (reset),
-            .read  (~bypass),
+            .read  (1'b1),
             .write (push),
             .wren  (1'b1),
             .raddr (rd_ptr_r),
@@ -112,6 +110,8 @@ module VX_fifo_queue #(
 
         if (OUT_REG != 0) begin : g_out_reg
             reg [DATAW-1:0] data_out_r;
+            wire going_empty = (ALM_EMPTY == 1) ? alm_empty : (size[ADDRW-1:0] == ADDRW'(1));
+            wire bypass = push && (empty || (going_empty && pop));
             always @(posedge clk) begin
                 if (bypass) begin
                     data_out_r <= data_in;

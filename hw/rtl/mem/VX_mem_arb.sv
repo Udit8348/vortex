@@ -17,13 +17,14 @@ module VX_mem_arb #(
     parameter NUM_INPUTS     = 1,
     parameter NUM_OUTPUTS    = 1,
     parameter DATA_SIZE      = 1,
-    parameter MEM_ADDR_WIDTH = `MEM_ADDR_WIDTH,
-    parameter ADDR_WIDTH     = (MEM_ADDR_WIDTH-`CLOG2(DATA_SIZE)),
     parameter TAG_WIDTH      = 1,
     parameter TAG_SEL_IDX    = 0,
     parameter REQ_OUT_BUF    = 0,
     parameter RSP_OUT_BUF    = 0,
-    parameter `STRING ARBITER = "R"
+    parameter `STRING ARBITER = "R",
+    parameter MEM_ADDR_WIDTH = `MEM_ADDR_WIDTH,
+    parameter ADDR_WIDTH     = (MEM_ADDR_WIDTH-`CLOG2(DATA_SIZE)),
+    parameter FLAGS_WIDTH    = `MEM_REQ_FLAGS_WIDTH
 ) (
     input wire              clk,
     input wire              reset,
@@ -33,10 +34,10 @@ module VX_mem_arb #(
 );
     localparam DATA_WIDTH   = (8 * DATA_SIZE);
     localparam LOG_NUM_REQS = `ARB_SEL_BITS(NUM_INPUTS, NUM_OUTPUTS);
-    localparam REQ_DATAW    = TAG_WIDTH + ADDR_WIDTH + `MEM_REQ_FLAGS_WIDTH + 1 + DATA_SIZE + DATA_WIDTH;
-    localparam RSP_DATAW    = TAG_WIDTH + DATA_WIDTH;
+    localparam REQ_DATAW    = 1 + ADDR_WIDTH + DATA_WIDTH + DATA_SIZE + FLAGS_WIDTH + TAG_WIDTH;
+    localparam RSP_DATAW    = DATA_WIDTH + TAG_WIDTH;
 
-    `STATIC_ASSERT ((NUM_INPUTS >= NUM_OUTPUTS), ("invalid parameter"))
+    `STATIC_ASSERT ((NUM_INPUTS >= NUM_OUTPUTS), ("invalid parameter: NUM_INPUTS=%0d, NUM_OUTPUTS=%0d", NUM_INPUTS, NUM_OUTPUTS));
 
     wire [NUM_INPUTS-1:0]                 req_valid_in;
     wire [NUM_INPUTS-1:0][REQ_DATAW-1:0]  req_data_in;
@@ -49,14 +50,7 @@ module VX_mem_arb #(
 
     for (genvar i = 0; i < NUM_INPUTS; ++i) begin : g_req_data_in
         assign req_valid_in[i] = bus_in_if[i].req_valid;
-        assign req_data_in[i] = {
-            bus_in_if[i].req_data.rw,
-            bus_in_if[i].req_data.byteen,
-            bus_in_if[i].req_data.addr,
-            bus_in_if[i].req_data.flags,
-            bus_in_if[i].req_data.data,
-            bus_in_if[i].req_data.tag
-        };
+        assign req_data_in[i]  = bus_in_if[i].req_data;
         assign bus_in_if[i].req_ready = req_ready_in[i];
     end
 
@@ -92,10 +86,10 @@ module VX_mem_arb #(
         assign bus_out_if[i].req_valid = req_valid_out[i];
         assign {
             bus_out_if[i].req_data.rw,
-            bus_out_if[i].req_data.byteen,
             bus_out_if[i].req_data.addr,
-            bus_out_if[i].req_data.flags,
             bus_out_if[i].req_data.data,
+            bus_out_if[i].req_data.byteen,
+            bus_out_if[i].req_data.flags,
             req_tag_out
         } = req_data_out[i];
         assign req_ready_out[i] = bus_out_if[i].req_ready;
@@ -123,18 +117,12 @@ module VX_mem_arb #(
                 .POS (TAG_SEL_IDX)
             ) bits_remove (
                 .data_in  (bus_out_if[i].rsp_data.tag),
+                .sel_out  (rsp_sel_in[i]),
                 .data_out (rsp_tag_out)
             );
-
             assign rsp_valid_in[i] = bus_out_if[i].rsp_valid;
-            assign rsp_data_in[i] = {rsp_tag_out, bus_out_if[i].rsp_data.data};
+            assign rsp_data_in[i]  = {bus_out_if[i].rsp_data.data, rsp_tag_out};
             assign bus_out_if[i].rsp_ready = rsp_ready_in[i];
-
-            if (NUM_INPUTS > 1) begin : g_rsp_sel_in
-                assign rsp_sel_in[i] = bus_out_if[i].rsp_data.tag[TAG_SEL_IDX +: LOG_NUM_REQS];
-            end else begin : g_no_rsp_sel_in
-                assign rsp_sel_in[i] = '0;
-            end
         end
 
         VX_stream_switch #(
@@ -158,10 +146,7 @@ module VX_mem_arb #(
 
         for (genvar i = 0; i < NUM_OUTPUTS; ++i) begin : g_rsp_data_in
             assign rsp_valid_in[i] = bus_out_if[i].rsp_valid;
-            assign rsp_data_in[i] = {
-                bus_out_if[i].rsp_data.tag,
-                bus_out_if[i].rsp_data.data
-            };
+            assign rsp_data_in[i]  = bus_out_if[i].rsp_data;
             assign bus_out_if[i].rsp_ready = rsp_ready_in[i];
         end
 
@@ -187,10 +172,7 @@ module VX_mem_arb #(
 
     for (genvar i = 0; i < NUM_INPUTS; ++i) begin : g_output
         assign bus_in_if[i].rsp_valid = rsp_valid_out[i];
-        assign {
-            bus_in_if[i].rsp_data.tag,
-            bus_in_if[i].rsp_data.data
-        } = rsp_data_out[i];
+        assign bus_in_if[i].rsp_data  = rsp_data_out[i];
         assign rsp_ready_out[i] = bus_in_if[i].rsp_ready;
     end
 

@@ -105,7 +105,7 @@ regression()
     ./ci/blackbox.sh --driver=simx --app=vecadd --rebuild=3
 
     # test for matmul
-    CONFIGS="-DTC_NUM=4 -DTC_SIZE=8" ./ci/blackbox.sh --cores=4 --app=matmul --driver=simx --threads=32 --warps=32 --args="-n128 -d1" 
+    CONFIGS="-DTC_NUM=4 -DTC_SIZE=8" ./ci/blackbox.sh --cores=4 --app=matmul --driver=simx --threads=32 --warps=32 --args="-n128 -d1"
 
     echo "regression tests done!"
 }
@@ -158,6 +158,7 @@ cache()
 
     # reduce l1 line size
     CONFIGS="-DL1_LINE_SIZE=$XSIZE" ./ci/blackbox.sh --driver=rtlsim --app=io_addr
+    CONFIGS="-DL1_LINE_SIZE=$XSIZE -DDISABLE_L1" ./ci/blackbox.sh --driver=rtlsim --app=io_addr
     CONFIGS="-DL1_LINE_SIZE=$XSIZE" ./ci/blackbox.sh --driver=simx --app=io_addr
     CONFIGS="-DL1_LINE_SIZE=$XSIZE -DLMEM_DISABLE" ./ci/blackbox.sh --driver=rtlsim --app=sgemmx
     CONFIGS="-DL1_LINE_SIZE=$XSIZE -DLMEM_DISABLE" ./ci/blackbox.sh --driver=simx --app=sgemmx
@@ -168,12 +169,10 @@ cache()
     CONFIGS="-DICACHE_NUM_WAYS=4 -DDCACHE_NUM_WAYS=8" ./ci/blackbox.sh --driver=simx --app=sgemmx
 
     # test cache banking
-    CONFIGS="-DLMEM_NUM_BANKS=4 -DDCACHE_NUM_BANKS=1" ./ci/blackbox.sh --driver=rtlsim --app=sgemmx
-    CONFIGS="-DLMEM_NUM_BANKS=2 -DDCACHE_NUM_BANKS=2" ./ci/blackbox.sh --driver=rtlsim --app=sgemmx
-    CONFIGS="-DLMEM_NUM_BANKS=2 -DDCACHE_NUM_BANKS=2" ./ci/blackbox.sh --driver=simx --app=sgemmx
-    CONFIGS="-DDCACHE_NUM_BANKS=1" ./ci/blackbox.sh --driver=rtlsim --app=sgemmx
-    CONFIGS="-DDCACHE_NUM_BANKS=2" ./ci/blackbox.sh --driver=rtlsim --app=sgemmx
-    CONFIGS="-DDCACHE_NUM_BANKS=2" ./ci/blackbox.sh --driver=simx --app=sgemmx
+    CONFIGS="-DMEM_BLOCK_SIZE=8 -DLMEM_NUM_BANKS=4 -DDCACHE_NUM_BANKS=1" ./ci/blackbox.sh --driver=rtlsim --app=sgemmx
+    CONFIGS="-DMEM_BLOCK_SIZE=8 -DLMEM_NUM_BANKS=4 -DDCACHE_NUM_BANKS=1" ./ci/blackbox.sh --driver=simx --app=sgemmx
+    CONFIGS="-DMEM_BLOCK_SIZE=8 -DLMEM_NUM_BANKS=2 -DDCACHE_NUM_BANKS=4" ./ci/blackbox.sh --driver=rtlsim --app=sgemmx --threads=8
+    CONFIGS="-DMEM_BLOCK_SIZE=8 -DLMEM_NUM_BANKS=2 -DDCACHE_NUM_BANKS=4" ./ci/blackbox.sh --driver=simx --app=sgemmx --threads=8
 
     # replacement policy
     CONFIGS="-DDCACHE_REPL_POLICY=0" ./ci/blackbox.sh --driver=rtlsim --app=sgemmx
@@ -322,6 +321,14 @@ config2()
     CONFIGS="-DPLATFORM_MEMORY_INTERLEAVE=1" ./ci/blackbox.sh --driver=opae --app=mstress
     CONFIGS="-DPLATFORM_MEMORY_INTERLEAVE=0" ./ci/blackbox.sh --driver=opae --app=mstress
 
+    # test memory ports
+    CONFIGS="-DMEM_BLOCK_SIZE=8 -DPLATFORM_MEMORY_BANKS=2" ./ci/blackbox.sh --driver=simx --app=mstress
+    CONFIGS="-DMEM_BLOCK_SIZE=8 -DPLATFORM_MEMORY_BANKS=2" ./ci/blackbox.sh --driver=simx --app=mstress --threads=8
+    CONFIGS="-DMEM_BLOCK_SIZE=8 -DPLATFORM_MEMORY_BANKS=2" ./ci/blackbox.sh --driver=rtlsim --app=mstress
+    CONFIGS="-DMEM_BLOCK_SIZE=8 -DPLATFORM_MEMORY_BANKS=2" ./ci/blackbox.sh --driver=rtlsim --app=mstress --threads=8
+    CONFIGS="-DMEM_BLOCK_SIZE=8" ./ci/blackbox.sh --driver=opae --app=mstress --threads=8
+    CONFIGS="-DMEM_BLOCK_SIZE=8" ./ci/blackbox.sh --driver=xrt --app=mstress --threads=8
+
     echo "configuration-2 tests done!"
 }
 
@@ -359,8 +366,8 @@ scope()
 {
     echo "begin scope tests..."
 
-    SCOPE_DEPTH=256 ./ci/blackbox.sh --driver=opae --app=demo --args="-n1" --scope
-    SCOPE_DEPTH=256 ./ci/blackbox.sh --driver=xrt --app=demo --args="-n1" --scope
+    SCOPE_DEPTH=128 ./ci/blackbox.sh --driver=opae --app=demo --args="-n1" --scope
+    SCOPE_DEPTH=128 ./ci/blackbox.sh --driver=xrt --app=demo --args="-n1" --scope
 
     echo "debugging scope done!"
 }
@@ -381,15 +388,25 @@ synthesis()
     echo "begin synthesis tests..."
 
     PREFIX=build_base make -C hw/syn/yosys clean
-    PREFIX=build_base CONFIGS="-DDPI_DISABLE -DEXT_F_DISABLE" make -C hw/syn/yosys synthesis
+    PREFIX=build_base CONFIGS="-DDPI_DISABLE -DEXT_F_DISABLE -DNUM_WARPS=2 -DNUM_THREADS=2" make -C hw/syn/yosys synthesis
 
     echo "synthesis tests done!"
+}
+
+vector()
+{
+    echo "begin vector tests..."
+
+    make -C sim/simx clean && CONFIGS="-DEXT_V_ENABLE" make -C sim/simx
+    TOOLDIR=@TOOLDIR@ XLEN=@XLEN@ VLEN=256 REG_TESTS=1 ./tests/riscv/riscv-vector-tests/run-test.sh
+
+    echo "vector tests done!"
 }
 
 show_usage()
 {
     echo "Vortex Regression Test"
-    echo "Usage: $0 [--clean] [--unittest] [--isa] [--kernel] [--regression] [--opencl] [--cache] [--config1] [--config2] [--debug] [--scope] [--stress] [--synthesis] [--all] [--h|--help]"
+    echo "Usage: $0 [--clean] [--unittest] [--isa] [--kernel] [--regression] [--opencl] [--cache] [--config1] [--config2] [--debug] [--scope] [--stress] [--synthesis] [--vector] [--all] [--h|--help]"
 }
 
 declare -a tests=()
@@ -439,6 +456,9 @@ while [ "$1" != "" ]; do
         --synthesis )
                 tests+=("synthesis")
                 ;;
+        --vector )
+                tests+=("vector")
+                ;;
         --all )
                 tests=()
                 tests+=("unittest")
@@ -454,6 +474,7 @@ while [ "$1" != "" ]; do
                 tests+=("scope")
                 tests+=("stress")
                 tests+=("synthesis")
+                tests+=("vector")
                 ;;
         -h | --help )
                 show_usage
