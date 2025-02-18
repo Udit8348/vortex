@@ -1,123 +1,112 @@
 # FPGA Startup and Configuration Guide
 
-## Gaining Access to FPGA's with CRNCH
-If you are associated with Georgia Tech (or related workshops) you can use CRNCH's server to gain remote access to FPGA's. Otherwise, you can skip to the Xilinx or Intel (Altera) synthesis steps below.
+## CRNCH
 
-## What is CRNCH?
+### **C**enter for **R**esearch into **N**ovel **C**omputing **H**ierarchies
 
-**C**enter for **R**esearch into **N**ovel **C**omputing **H**ierarchies
+If you are associated with Georgia Tech you can use CRNCH's server to gain remote access to FPGA's (detailed CRNCH documentation [here](crnch.md)). Otherwise, you will have to supply your own compatible FPGA with a machine running a compatible OS (Ubuntu). 
+> If you are working in your own FPGA environment, you will need to adapt the CRNCH specific steps to your own system.
 
-## What does CRNCH Offer?
+### Login to CRNCH FPGA Node
 
-**The Rogues Gallery (RG)**: new concept focused on developing our understanding of next-generation hardware with a focus on unorthodox and uncommon technologies. **RG** will acquire new and unique hardware (ie, the aforementioned “*rogues*”) from vendors, research labs, and startups and make this hardware available to students, faculty, and industry collaborators within a managed data center environment
+CRNCH users need first need to login to FPGA specific hardware.
 
-## Why are the Rouges Important?
-
-By exposing students and researchers to this set of unique hardware, we hope to foster cross-cutting discussions about hardware designs that will drive future *performance improvements in computing long after the Moore’s Law era of “cheap transistors” ends*. Specifically, the Rouges Gallery contains FPGA's which can be synthesized into Vortex hardware.
-
-## How is the Rouges Gallery Funded?
-
-Rogues Gallery testbed is primarily supported by the National Science Foundation (NSF) under NSF Award Number [#2016701](https://www.nsf.gov/awardsearch/showAward?AWD_ID=2016701&HistoricalAwards=false)
-
-## Rouges Gallery Documentation
-
-You can read about RG in more detail on its official documentation [page](https://gt-crnch-rg.readthedocs.io/en/main/index.html#).
-
-You can listen to a talk about RG [here](https://mediaspace.gatech.edu/media/Jeff%20Young%20-%20Rogues%20Gallery%20-%20CRNCH%20Summit%202021/1_lqlgr0jj)
-
-[CRNCH Summit 2023](https://github.com/gt-crnch/crnch-summit-2023/tree/main)
-
-## Request Access for Rouges Gallery
-
-You should use [this form](https://crnch-rg.cc.gatech.edu/request-rogues-gallery-access/) to request access to RG’s reconfigurable computing (vortex fpga) resources. You should receive an email with your ticket item being created. Once it gets processed, you should get an email confirmed your access has been granted. It might take some time to get processed.
-
-## How to Access Rouges Gallery?
-There are two methods of accessing CRNCH's Rouges Gallery
-1) Web-based GUI: [rg-ood.crnch.gatech.edu](http://rg-ood.crnch.gatech.edu/)
-2) SSH: `ssh <your-gt-username>@rg-login.crnch.gatech.edu`
-
-
-## Where should I keep my files?
-The CRNCH servers have a folder called `USERSCRATCH` which can be found in your home directory: `echo $HOME`. You should keep all your files in this folder since it is available across all the Rouges Gallery Nodes.
-
-## **What Machines are Available in the Rogues Gallery?**
-
-Complete list of machines can be found [here](https://gt-crnch-rg.readthedocs.io/en/main/general/rg-hardware.html). Furthermore, you can find detailed information about the FPGA hardware [here](https://gt-crnch-rg.readthedocs.io/en/main/reconfig/xilinx/xilinx-getting-started.html).
-
-## Allocate an FPGA Node
-Once you’ve connected to the CRNCH login node, you can use the Slurm scheduler to request an interactive job using `salloc`. This [page](https://gt-crnch-rg.readthedocs.io/en/main/general/using-slurm.html) explains why we use Slurm to request resources. Documentation for `salloc` can be found [here](https://gt-crnch-rg.readthedocs.io/en/main/general/using-slurm-examples.html). And here.
-
-
-To request 16 cores and 64GB of RAM for 8 hours on flubber1, a fpga dev node:
-```bash
-salloc -p rg-fpga --nodes=1 --ntasks-per-node=16 --mem=64G --nodelist flubber1 --time=08:00:00
-```
-
-| Note: In some cases, it might be better to directly `ssh` into the flubber node because if you disconnect from your slurm allocation, the synthesis will end. You can do this by `ssh`ing into crnch, and then `ssh`ing into the node that you need to run synthesis on.
-
+First, `ssh` into `rg-login` and navigate to the root of your vortex repo. If it is your first time, you will need to clone the repo. It must be stored in some subdirectory of `USERSCRATCH` because the files are synchronized betwen the login node and the FPGA node. For example,
 ```
 ssh <your-gt-username>@rg-login.crnch.gatech.edu
-ssh flubber<1-9>
+cd USERSCRATCH
+git clone --depth=1 --recursive https://github.com/vortexgpgpu/vortex.git
+cd vortex
 ```
 
-Synthesis for Xilinx Boards
-----------------------
-Once you are logged in, you will need to complete some first time configurations. If you are interested in the Intel (Altera) synthesis steps, scroll down below.
+While you are logged into the `rg-login`node, you need to setup the vortex environment.
 
-### Source Configuration Scripts
+### First Time Evironment Setup
+There are some one-time configurations you need to complete. If you are logging back in, you can skip to the regular environment setup steps.
 ```
-# From any directory
-$ source /opt/xilinx/xrt/setup.sh
-$ source /tools/reconfig/xilinx/Vitis/2023.1/settings64.sh
-```
+# from root of vortex repo run config script to set bit size and vortex toolchain installation path
+# check if config.mk file was generated from config.mk.in file
+./configure --xlen=32 --tooldir=$HOME/tools
 
-### Check Installed FPGA Platforms
-`platforminfo -l` which tells us the correct name of the platform installed on the current fpga node. It should be used for the `PLATFORM` variable below. Otherwise, if there is an error then there was an issue with the previous two commands.
+# now create a build folder
+mkdir build
+cd build
 
-### Install Vortex Toolchain
-The Xilinx synthesis process requires verilator to generate the bitstream. Eventually, you will need the whole toolchain to run the bitstream on the FPGA. Therefore, the Vortex toolchain and can be installed as follows. Since everything is stored in USERSCRATCH, you should only have to run this step: `./ci/toolchain_install.sh --all` once.
+# run the configure script again (inside build) to generate more files 
+c../configure --xlen=32 --tooldir=$HOME/tools
 
-```
-# Make a build directory from root and configure scripts for your environment
-mkdir build && cd build && ../configure --xlen=32 --tooldir=$HOME/tools
-
-# Install the whole prebuilt toolchain
+# from build folder, install the whole prebuilt toolchain (one-time, long download)
 ./ci/toolchain_install.sh --all
+```
 
-# Source env
+### Environment Setup
+If you completed the first time setup, and you are logging back in, you just need to follow these steps.
+
+```
+# from root of vortex repo run config script to set bit size and vortex toolchain installation path
+# check if config.mk file was generated from config.mk.in file
+./configure --xlen=32 --tooldir=$HOME/tools
+
+# enter build directory
+cd build
+
+# run the configure script again (inside build) to generate more files
+../configure --xlen=32 --tooldir=$HOME/tools
+```
+
+Now, you can enter the a FPGA connected node. These are any of the `flubber<1-9>` nodes. We can use `flubber1` for now. When we use a node for executing workloads, we need to allocate them from SLURM using `salloc`.
+
+
+```
+salloc -p rg-fpga --nodes=1 --ntasks-per-node=16 --mem=64G --nodelist flubber1 --time=12:00:00
+cd ~/USERSCRATCH/vortex
+cd build
 source ./ci/toolchain_env.sh
+unset VERILATOR_ROOT
 ```
 
 
-# Check environment setup
+### Check environment setup
 
 To check if the toolchain is installed and functioning, this command should run properly
 `verilator --version`
 
+
+Synthesis for Xilinx Boards
+----------------------
+
+### Source Configuration Scripts
+```
+# From any directory
+source /opt/xilinx/xrt/setup.sh
+source /tools/reconfig/xilinx/Vitis/2023.1/settings64.sh
+```
+
+### Check Installed FPGA Platforms
+`platforminfo -l` which tells us the correct name of the platform installed on the current fpga node. It should be used for the `PLATFORM` environment variable below. Otherwise, if there is an error then there was an issue with the previous two commands.
+
 ### Build the FPGA Bitstream
-Exit the `build` directory and the root directory contains the path `hw/syn/xilinx/xrt` which has the makefile used to generate the Vortex bitstream. These files also exist in the build directory which was created in a eariler step, however the synthesis steps will not work from there.
+Exit the `build` directory back where the root directory contains the path `hw/syn/xilinx/xrt` which has the makefile used to generate the Vortex bitstream. (These files also exist in the build directory which was created in a eariler step, however the synthesis steps will not work from there. This is a known bug)
 
 ```
-    $ cd hw/syn/xilinx/xrt
-    $ PREFIX=test1 PLATFORM=xilinx_u50_gen3x16_xdma_5_202210_1 TARGET=hw NUM_CORES=1 make > build_u250_hw_1c.log 2>&1 &
+cd hw/syn/xilinx/xrt
+PREFIX=test1 PLATFORM=xilinx_u50_gen3x16_xdma_5_202210_1 TARGET=hw NUM_CORES=1 nohup make > build_u50_hw_1c.log 2>&1 &
 ```
-This will run the synthesis under new build directory: BUILD_DIR := "\<PREFIX>\_\<PLATFORM>\_\<TARGET>"
-If it comletes successfully, the generated bitstream will be located under <BUILD_DIR>/bin/vortex_afu.xclbin
+> This will run the synthesis as a process in the background using `nohup`. It will create a directory with the following format in the current folder:` BUILD_DIR := "\<PREFIX>\_\<PLATFORM>\_\<TARGET>"` as well as a log file with the name you provided in the current directory. Even if you disconnect from the node, it will continue to run in the background until the bitstream generatation completes or it fails with an error. You can check log files for the status. Run the command `while true; do cat build_u50_hw_1c.log; sleep 3; done`
 
-For long-running jobs, invocation of this makefile can be made of the following form:
+If it completes successfully, the generated bitstream will be located under `<BUILD_DIR>/bin/vortex_afu.xclbin`
 
-`[CONFIGS=<vortex macros>] [PREFIX=<prefix directory name>] [NUM_CORES=<#>] TARGET=hw|hw_emu PLATFORM=<platform baseName> nohup make > <log filename> 2>&1 &`
-
-For example:
-
+#### MISC
+You can configure other settings for example:
 ```bash
 CONFIGS="-DL2_ENABLE -DDCACHE_SIZE=8192" PREFIX=build_4c_u280 NUM_CORES=4 TARGET=hw PLATFORM=xilinx_u280_gen3x16_xdma_1_202310_1 nohup make > build_u250_hw_4c.log 2>&1 &
 ```
-| You can check the status by checking the log file and contents of the `bin` directory.
 
 ### Running a Program on Xilinx FPGA
 
-The [blackbox.sh](./simulation.md) script within the build directory can be used to run a test with Vortex’s xrt driver using the following command. Currently, apps can be any subfolder test under regression or opencl
+Follow the env setup steps from above, and also build the vortex libary as the main readme describes.
+
+The [blackbox.sh](./simulation.md) script within the build directory can be used to run a test with Vortex's xrt driver using the following command. Currently, apps can be any subfolder test under regression or opencl
 
 `FPGA_BIN_DIR=<path to bitstream directory> TARGET=hw|hw_emu PLATFORM=<platform baseName> ./ci/blackbox.sh --driver=xrt --app=<test name>`
 

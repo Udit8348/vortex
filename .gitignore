@@ -3,5 +3,11 @@
 *.cache
 *.code-workspace
 
+./third_party/*
+
+hw/syn/*u50_gen3x16*/
+
 # syn
-hw/syn/xilinx/xrt/test*/
+hw/syn/xilinx/xrt/*u50*/
+hw/syn/xilinx/xrt/*u250*/
+hw/syn/xilinx/xrt/*.log
