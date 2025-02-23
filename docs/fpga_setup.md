@@ -33,7 +33,7 @@ mkdir build
 cd build
 
 # run the configure script again (inside build) to generate more files 
-c../configure --xlen=32 --tooldir=$HOME/tools
+../configure --xlen=32 --tooldir=$HOME/tools
 
 # from build folder, install the whole prebuilt toolchain (one-time, long download)
 ./ci/toolchain_install.sh --all
