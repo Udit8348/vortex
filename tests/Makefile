@@ -1,7 +1,7 @@
 ROOT_DIR := $(realpath ..)
 include $(ROOT_DIR)/config.mk
 
-all: regression
+all: regression kernel
 
 unittest:
 	$(MAKE) -C unittest

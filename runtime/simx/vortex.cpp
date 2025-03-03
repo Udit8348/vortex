@@ -332,8 +332,6 @@ public:
   }
 
   int start(uint64_t krnl_addr, uint64_t args_addr) {
-    return 9;
-    int a = 1 / 0;
     std::cout << "[UDIT] vx_start simx" << std::endl;
 
     // ensure prior run completed
